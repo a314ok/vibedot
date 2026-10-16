@@ -1,0 +1,214 @@
+{
+  "format": 1,
+  "variables": [
+    {
+      "name": "speed",
+      "ty": "Number",
+      "default": {
+        "Number": 150.0
+      },
+      "exposed": false
+    }
+  ],
+  "nodes": [
+    {
+      "id": 1,
+      "op": "event.process",
+      "pos": [
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "id": 2,
+      "op": "node.get_position",
+      "pos": [
+        0.0,
+        120.0
+      ]
+    },
+    {
+      "id": 3,
+      "op": "node.first_in_group",
+      "pos": [
+        0.0,
+        220.0
+      ],
+      "values": {
+        "group": {
+          "String": "player"
+        }
+      }
+    },
+    {
+      "id": 4,
+      "op": "node.get_position",
+      "pos": [
+        220.0,
+        220.0
+      ]
+    },
+    {
+      "id": 5,
+      "op": "vec.direction",
+      "pos": [
+        440.0,
+        140.0
+      ]
+    },
+    {
+      "id": 6,
+      "op": "var.get",
+      "pos": [
+        440.0,
+        260.0
+      ],
+      "values": {
+        "var": {
+          "String": "speed"
+        }
+      }
+    },
+    {
+      "id": 7,
+      "op": "math.mul",
+      "pos": [
+        660.0,
+        180.0
+      ]
+    },
+    {
+      "id": 8,
+      "op": "physics.set_velocity",
+      "pos": [
+        700.0,
+        0.0
+      ]
+    },
+    {
+      "id": 9,
+      "op": "node.rotate",
+      "pos": [
+        940.0,
+        0.0
+      ]
+    },
+    {
+      "id": 10,
+      "op": "math.mul",
+      "pos": [
+        940.0,
+        140.0
+      ],
+      "values": {
+        "b": {
+          "Number": 220.0
+        }
+      }
+    }
+  ],
+  "links": [
+    {
+      "from": {
+        "node": 1,
+        "pin": "then"
+      },
+      "to": {
+        "node": 8,
+        "pin": "exec"
+      }
+    },
+    {
+      "from": {
+        "node": 8,
+        "pin": "then"
+      },
+      "to": {
+        "node": 9,
+        "pin": "exec"
+      }
+    },
+    {
+      "from": {
+        "node": 3,
+        "pin": "node"
+      },
+      "to": {
+        "node": 4,
+        "pin": "node"
+      }
+    },
+    {
+      "from": {
+        "node": 2,
+        "pin": "position"
+      },
+      "to": {
+        "node": 5,
+        "pin": "from"
+      }
+    },
+    {
+      "from": {
+        "node": 4,
+        "pin": "position"
+      },
+      "to": {
+        "node": 5,
+        "pin": "to"
+      }
+    },
+    {
+      "from": {
+        "node": 5,
+        "pin": "direction"
+      },
+      "to": {
+        "node": 7,
+        "pin": "a"
+      }
+    },
+    {
+      "from": {
+        "node": 6,
+        "pin": "value"
+      },
+      "to": {
+        "node": 7,
+        "pin": "b"
+      }
+    },
+    {
+      "from": {
+        "node": 7,
+        "pin": "result"
+      },
+      "to": {
+        "node": 8,
+        "pin": "velocity"
+      }
+    },
+    {
+      "from": {
+        "node": 1,
+        "pin": "delta"
+      },
+      "to": {
+        "node": 10,
+        "pin": "a"
+      }
+    },
+    {
+      "from": {
+        "node": 10,
+        "pin": "result"
+      },
+      "to": {
+        "node": 9,
+        "pin": "degrees"
+      }
+    }
+  ],
+  "comments": [],
+  "next_id": 11
+}

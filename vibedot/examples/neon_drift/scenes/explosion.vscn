@@ -1,0 +1,63 @@
+{
+  "format": 1,
+  "root": {
+    "name": "Explosion",
+    "type": "Node2D",
+    "script": "blueprints/explosion.vbp",
+    "children": [
+      {
+        "name": "Sparks",
+        "type": "Particles2D",
+        "emitting": true,
+        "rate": 0.0,
+        "burst": 70,
+        "one_shot": true,
+        "lifetime": 0.75,
+        "lifetime_random": 0.3,
+        "direction": -1.5708,
+        "spread": 3.14,
+        "speed_min": 80.0,
+        "speed_max": 460.0,
+        "gravity": [
+          0.0,
+          0.0
+        ],
+        "damping": 3.0,
+        "emit_radius": 0.0,
+        "size_start": 9.0,
+        "size_end": 0.0,
+        "color_start": {
+          "r": 0.9822506,
+          "g": 0.79129803,
+          "b": 0.25415218,
+          "a": 1.0
+        },
+        "color_end": {
+          "r": 0.90466136,
+          "g": 0.049706563,
+          "b": 0.111932434,
+          "a": 0.0
+        },
+        "emission": 4.0,
+        "shape": "Circle",
+        "blend": "Additive",
+        "world_space": true,
+        "max_particles": 2000
+      },
+      {
+        "name": "Flash",
+        "type": "PointLight2D",
+        "color": {
+          "r": 0.9646863,
+          "g": 0.2874409,
+          "b": 0.045186203,
+          "a": 1.0
+        },
+        "energy": 3.0,
+        "radius": 260.0,
+        "falloff": 2.0,
+        "flicker": 0.0
+      }
+    ]
+  }
+}

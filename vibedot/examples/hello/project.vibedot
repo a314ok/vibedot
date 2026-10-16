@@ -1,0 +1,59 @@
+{
+  "name": "Hello Vibedot",
+  "main_scene": "scenes/main.vscn",
+  "window": {
+    "width": 1280,
+    "height": 720,
+    "resizable": true,
+    "fullscreen": false,
+    "vsync": true
+  },
+  "physics": {
+    "gravity": [
+      0.0,
+      980.0
+    ],
+    "ticks_per_second": 60
+  },
+  "render": {
+    "pixel_art": false
+  },
+  "input": {
+    "fire": [
+      "J",
+      "Z",
+      "MouseLeft"
+    ],
+    "jump": [
+      "Space",
+      "W",
+      "ArrowUp"
+    ],
+    "ui_accept": [
+      "Enter",
+      "Space"
+    ],
+    "ui_cancel": [
+      "Escape"
+    ],
+    "ui_down": [
+      "ArrowDown",
+      "S"
+    ],
+    "ui_left": [
+      "ArrowLeft",
+      "A"
+    ],
+    "ui_right": [
+      "ArrowRight",
+      "D"
+    ],
+    "ui_select": [
+      "Space"
+    ],
+    "ui_up": [
+      "ArrowUp",
+      "W"
+    ]
+  }
+}

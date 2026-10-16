@@ -1,0 +1,993 @@
+{
+  "format": 1,
+  "variables": [
+    {
+      "name": "score",
+      "ty": "Number",
+      "default": {
+        "Number": 0.0
+      },
+      "exposed": false
+    }
+  ],
+  "nodes": [
+    {
+      "id": 1,
+      "op": "event.timeout",
+      "pos": [
+        0.0,
+        0.0
+      ],
+      "values": {
+        "timer": {
+          "String": "SpawnTimer"
+        }
+      }
+    },
+    {
+      "id": 2,
+      "op": "node.first_in_group",
+      "pos": [
+        0.0,
+        120.0
+      ],
+      "values": {
+        "group": {
+          "String": "player"
+        }
+      }
+    },
+    {
+      "id": 3,
+      "op": "node.get_position",
+      "pos": [
+        220.0,
+        120.0
+      ]
+    },
+    {
+      "id": 4,
+      "op": "math.random",
+      "pos": [
+        220.0,
+        200.0
+      ],
+      "values": {
+        "max": {
+          "Number": 360.0
+        },
+        "min": {
+          "Number": 0.0
+        }
+      }
+    },
+    {
+      "id": 5,
+      "op": "vec.from_angle",
+      "pos": [
+        440.0,
+        200.0
+      ],
+      "values": {
+        "length": {
+          "Number": 620.0
+        }
+      }
+    },
+    {
+      "id": 6,
+      "op": "math.add",
+      "pos": [
+        640.0,
+        140.0
+      ]
+    },
+    {
+      "id": 7,
+      "op": "vec.clamp",
+      "pos": [
+        640.0,
+        240.0
+      ],
+      "values": {
+        "max": {
+          "Vec2": [
+            940.0,
+            640.0
+          ]
+        },
+        "min": {
+          "Vec2": [
+            -940.0,
+            -640.0
+          ]
+        }
+      }
+    },
+    {
+      "id": 8,
+      "op": "node.spawn",
+      "pos": [
+        860.0,
+        0.0
+      ],
+      "values": {
+        "scene": {
+          "String": "scenes/enemy.vscn"
+        }
+      }
+    },
+    {
+      "id": 9,
+      "op": "event.timeout",
+      "pos": [
+        0.0,
+        360.0
+      ],
+      "values": {
+        "timer": {
+          "String": "OrbTimer"
+        }
+      }
+    },
+    {
+      "id": 10,
+      "op": "vec.random_in_circle",
+      "pos": [
+        220.0,
+        440.0
+      ],
+      "values": {
+        "radius": {
+          "Number": 620.0
+        }
+      }
+    },
+    {
+      "id": 11,
+      "op": "node.spawn",
+      "pos": [
+        820.0,
+        360.0
+      ],
+      "values": {
+        "scene": {
+          "String": "scenes/orb.vscn"
+        }
+      }
+    },
+    {
+      "id": 12,
+      "op": "event.custom",
+      "pos": [
+        0.0,
+        620.0
+      ],
+      "values": {
+        "name": {
+          "String": "orb"
+        }
+      }
+    },
+    {
+      "id": 13,
+      "op": "var.add",
+      "pos": [
+        260.0,
+        620.0
+      ],
+      "values": {
+        "amount": {
+          "Number": 10.0
+        },
+        "var": {
+          "String": "score"
+        }
+      }
+    },
+    {
+      "id": 14,
+      "op": "node.get_node",
+      "pos": [
+        260.0,
+        730.0
+      ],
+      "values": {
+        "path": {
+          "String": "%Score"
+        }
+      }
+    },
+    {
+      "id": 15,
+      "op": "str.format",
+      "pos": [
+        520.0,
+        730.0
+      ],
+      "values": {
+        "template": {
+          "String": "SCORE  {0}"
+        }
+      }
+    },
+    {
+      "id": 16,
+      "op": "node.set_text",
+      "pos": [
+        780.0,
+        620.0
+      ]
+    },
+    {
+      "id": 17,
+      "op": "game.flash",
+      "pos": [
+        1040.0,
+        620.0
+      ],
+      "values": {
+        "color": {
+          "Color": {
+            "r": 1.0,
+            "g": 0.85,
+            "b": 0.3,
+            "a": 0.18
+          }
+        },
+        "duration": {
+          "Number": 0.12
+        }
+      }
+    },
+    {
+      "id": 18,
+      "op": "event.custom",
+      "pos": [
+        0.0,
+        860.0
+      ],
+      "values": {
+        "name": {
+          "String": "enemy_killed"
+        }
+      }
+    },
+    {
+      "id": 19,
+      "op": "var.add",
+      "pos": [
+        260.0,
+        860.0
+      ],
+      "values": {
+        "amount": {
+          "Number": 25.0
+        },
+        "var": {
+          "String": "score"
+        }
+      }
+    },
+    {
+      "id": 20,
+      "op": "node.get_node",
+      "pos": [
+        260.0,
+        970.0
+      ],
+      "values": {
+        "path": {
+          "String": "%Score"
+        }
+      }
+    },
+    {
+      "id": 21,
+      "op": "str.format",
+      "pos": [
+        520.0,
+        970.0
+      ],
+      "values": {
+        "template": {
+          "String": "SCORE  {0}"
+        }
+      }
+    },
+    {
+      "id": 22,
+      "op": "node.set_text",
+      "pos": [
+        780.0,
+        860.0
+      ]
+    },
+    {
+      "id": 23,
+      "op": "node.spawn",
+      "pos": [
+        1040.0,
+        860.0
+      ],
+      "values": {
+        "scene": {
+          "String": "scenes/explosion.vscn"
+        }
+      }
+    },
+    {
+      "id": 24,
+      "op": "game.shake",
+      "pos": [
+        1300.0,
+        860.0
+      ],
+      "values": {
+        "amount": {
+          "Number": 0.35
+        }
+      }
+    },
+    {
+      "id": 25,
+      "op": "event.custom",
+      "pos": [
+        0.0,
+        1180.0
+      ],
+      "values": {
+        "name": {
+          "String": "game_over"
+        }
+      }
+    },
+    {
+      "id": 26,
+      "op": "flow.do_once",
+      "pos": [
+        240.0,
+        1180.0
+      ]
+    },
+    {
+      "id": 27,
+      "op": "node.get_node",
+      "pos": [
+        240.0,
+        1300.0
+      ],
+      "values": {
+        "path": {
+          "String": "%GameOver"
+        }
+      }
+    },
+    {
+      "id": 28,
+      "op": "node.set_visible",
+      "pos": [
+        460.0,
+        1180.0
+      ]
+    },
+    {
+      "id": 29,
+      "op": "game.time_scale",
+      "pos": [
+        680.0,
+        1180.0
+      ],
+      "values": {
+        "scale": {
+          "Number": 0.25
+        }
+      }
+    },
+    {
+      "id": 30,
+      "op": "game.flash",
+      "pos": [
+        900.0,
+        1180.0
+      ],
+      "values": {
+        "color": {
+          "Color": {
+            "r": 1.0,
+            "g": 0.2,
+            "b": 0.3,
+            "a": 0.55
+          }
+        },
+        "duration": {
+          "Number": 0.5
+        }
+      }
+    },
+    {
+      "id": 31,
+      "op": "game.shake",
+      "pos": [
+        1120.0,
+        1180.0
+      ],
+      "values": {
+        "amount": {
+          "Number": 1.0
+        }
+      }
+    },
+    {
+      "id": 32,
+      "op": "flow.delay",
+      "pos": [
+        1340.0,
+        1180.0
+      ],
+      "values": {
+        "seconds": {
+          "Number": 0.6
+        }
+      }
+    },
+    {
+      "id": 33,
+      "op": "game.time_scale",
+      "pos": [
+        1560.0,
+        1180.0
+      ],
+      "values": {
+        "scale": {
+          "Number": 1.0
+        }
+      }
+    },
+    {
+      "id": 34,
+      "op": "game.reload",
+      "pos": [
+        1780.0,
+        1180.0
+      ]
+    },
+    {
+      "id": 35,
+      "op": "event.key_pressed",
+      "pos": [
+        0.0,
+        1460.0
+      ],
+      "values": {
+        "key": {
+          "String": "Escape"
+        }
+      }
+    },
+    {
+      "id": 36,
+      "op": "game.quit",
+      "pos": [
+        240.0,
+        1460.0
+      ]
+    },
+    {
+      "id": 37,
+      "op": "event.ready",
+      "pos": [
+        0.0,
+        1580.0
+      ]
+    },
+    {
+      "id": 38,
+      "op": "node.get_node",
+      "pos": [
+        0.0,
+        1680.0
+      ],
+      "values": {
+        "path": {
+          "String": "SpawnTimer"
+        }
+      }
+    },
+    {
+      "id": 39,
+      "op": "node.get_node",
+      "pos": [
+        0.0,
+        1780.0
+      ],
+      "values": {
+        "path": {
+          "String": "OrbTimer"
+        }
+      }
+    },
+    {
+      "id": 40,
+      "op": "timer.start",
+      "pos": [
+        240.0,
+        1580.0
+      ]
+    },
+    {
+      "id": 41,
+      "op": "timer.start",
+      "pos": [
+        460.0,
+        1580.0
+      ]
+    },
+    {
+      "id": 42,
+      "op": "debug.print",
+      "pos": [
+        680.0,
+        1580.0
+      ],
+      "values": {
+        "value": {
+          "String": "Neon Drift started - good luck!"
+        }
+      }
+    }
+  ],
+  "links": [
+    {
+      "from": {
+        "node": 1,
+        "pin": "then"
+      },
+      "to": {
+        "node": 8,
+        "pin": "exec"
+      }
+    },
+    {
+      "from": {
+        "node": 2,
+        "pin": "node"
+      },
+      "to": {
+        "node": 3,
+        "pin": "node"
+      }
+    },
+    {
+      "from": {
+        "node": 4,
+        "pin": "result"
+      },
+      "to": {
+        "node": 5,
+        "pin": "degrees"
+      }
+    },
+    {
+      "from": {
+        "node": 3,
+        "pin": "position"
+      },
+      "to": {
+        "node": 6,
+        "pin": "a"
+      }
+    },
+    {
+      "from": {
+        "node": 5,
+        "pin": "vector"
+      },
+      "to": {
+        "node": 6,
+        "pin": "b"
+      }
+    },
+    {
+      "from": {
+        "node": 6,
+        "pin": "result"
+      },
+      "to": {
+        "node": 7,
+        "pin": "vector"
+      }
+    },
+    {
+      "from": {
+        "node": 7,
+        "pin": "result"
+      },
+      "to": {
+        "node": 8,
+        "pin": "position"
+      }
+    },
+    {
+      "from": {
+        "node": 9,
+        "pin": "then"
+      },
+      "to": {
+        "node": 11,
+        "pin": "exec"
+      }
+    },
+    {
+      "from": {
+        "node": 10,
+        "pin": "point"
+      },
+      "to": {
+        "node": 11,
+        "pin": "position"
+      }
+    },
+    {
+      "from": {
+        "node": 12,
+        "pin": "then"
+      },
+      "to": {
+        "node": 13,
+        "pin": "exec"
+      }
+    },
+    {
+      "from": {
+        "node": 13,
+        "pin": "then"
+      },
+      "to": {
+        "node": 16,
+        "pin": "exec"
+      }
+    },
+    {
+      "from": {
+        "node": 13,
+        "pin": "value"
+      },
+      "to": {
+        "node": 15,
+        "pin": "0"
+      }
+    },
+    {
+      "from": {
+        "node": 15,
+        "pin": "result"
+      },
+      "to": {
+        "node": 16,
+        "pin": "text"
+      }
+    },
+    {
+      "from": {
+        "node": 14,
+        "pin": "node"
+      },
+      "to": {
+        "node": 16,
+        "pin": "node"
+      }
+    },
+    {
+      "from": {
+        "node": 16,
+        "pin": "then"
+      },
+      "to": {
+        "node": 17,
+        "pin": "exec"
+      }
+    },
+    {
+      "from": {
+        "node": 18,
+        "pin": "then"
+      },
+      "to": {
+        "node": 19,
+        "pin": "exec"
+      }
+    },
+    {
+      "from": {
+        "node": 19,
+        "pin": "then"
+      },
+      "to": {
+        "node": 22,
+        "pin": "exec"
+      }
+    },
+    {
+      "from": {
+        "node": 19,
+        "pin": "value"
+      },
+      "to": {
+        "node": 21,
+        "pin": "0"
+      }
+    },
+    {
+      "from": {
+        "node": 21,
+        "pin": "result"
+      },
+      "to": {
+        "node": 22,
+        "pin": "text"
+      }
+    },
+    {
+      "from": {
+        "node": 20,
+        "pin": "node"
+      },
+      "to": {
+        "node": 22,
+        "pin": "node"
+      }
+    },
+    {
+      "from": {
+        "node": 22,
+        "pin": "then"
+      },
+      "to": {
+        "node": 23,
+        "pin": "exec"
+      }
+    },
+    {
+      "from": {
+        "node": 23,
+        "pin": "then"
+      },
+      "to": {
+        "node": 24,
+        "pin": "exec"
+      }
+    },
+    {
+      "from": {
+        "node": 18,
+        "pin": "payload"
+      },
+      "to": {
+        "node": 23,
+        "pin": "position"
+      }
+    },
+    {
+      "from": {
+        "node": 25,
+        "pin": "then"
+      },
+      "to": {
+        "node": 26,
+        "pin": "exec"
+      }
+    },
+    {
+      "from": {
+        "node": 26,
+        "pin": "then"
+      },
+      "to": {
+        "node": 28,
+        "pin": "exec"
+      }
+    },
+    {
+      "from": {
+        "node": 28,
+        "pin": "then"
+      },
+      "to": {
+        "node": 29,
+        "pin": "exec"
+      }
+    },
+    {
+      "from": {
+        "node": 29,
+        "pin": "then"
+      },
+      "to": {
+        "node": 30,
+        "pin": "exec"
+      }
+    },
+    {
+      "from": {
+        "node": 30,
+        "pin": "then"
+      },
+      "to": {
+        "node": 31,
+        "pin": "exec"
+      }
+    },
+    {
+      "from": {
+        "node": 31,
+        "pin": "then"
+      },
+      "to": {
+        "node": 32,
+        "pin": "exec"
+      }
+    },
+    {
+      "from": {
+        "node": 32,
+        "pin": "completed"
+      },
+      "to": {
+        "node": 33,
+        "pin": "exec"
+      }
+    },
+    {
+      "from": {
+        "node": 33,
+        "pin": "then"
+      },
+      "to": {
+        "node": 34,
+        "pin": "exec"
+      }
+    },
+    {
+      "from": {
+        "node": 27,
+        "pin": "node"
+      },
+      "to": {
+        "node": 28,
+        "pin": "node"
+      }
+    },
+    {
+      "from": {
+        "node": 35,
+        "pin": "then"
+      },
+      "to": {
+        "node": 36,
+        "pin": "exec"
+      }
+    },
+    {
+      "from": {
+        "node": 37,
+        "pin": "then"
+      },
+      "to": {
+        "node": 40,
+        "pin": "exec"
+      }
+    },
+    {
+      "from": {
+        "node": 40,
+        "pin": "then"
+      },
+      "to": {
+        "node": 41,
+        "pin": "exec"
+      }
+    },
+    {
+      "from": {
+        "node": 41,
+        "pin": "then"
+      },
+      "to": {
+        "node": 42,
+        "pin": "exec"
+      }
+    },
+    {
+      "from": {
+        "node": 38,
+        "pin": "node"
+      },
+      "to": {
+        "node": 40,
+        "pin": "timer"
+      }
+    },
+    {
+      "from": {
+        "node": 39,
+        "pin": "node"
+      },
+      "to": {
+        "node": 41,
+        "pin": "timer"
+      }
+    }
+  ],
+  "comments": [
+    {
+      "pos": [
+        -40.0,
+        -60.0
+      ],
+      "size": [
+        1000.0,
+        300.0
+      ],
+      "text": "Spawn enemies around the player",
+      "color": {
+        "r": 0.55,
+        "g": 0.36,
+        "b": 0.96,
+        "a": 0.25
+      }
+    },
+    {
+      "pos": [
+        -40.0,
+        300.0
+      ],
+      "size": [
+        1000.0,
+        200.0
+      ],
+      "text": "Spawn energy orbs",
+      "color": {
+        "r": 0.55,
+        "g": 0.36,
+        "b": 0.96,
+        "a": 0.25
+      }
+    },
+    {
+      "pos": [
+        -40.0,
+        560.0
+      ],
+      "size": [
+        1300.0,
+        520.0
+      ],
+      "text": "Score: orbs +10, enemies +25",
+      "color": {
+        "r": 0.55,
+        "g": 0.36,
+        "b": 0.96,
+        "a": 0.25
+      }
+    },
+    {
+      "pos": [
+        -40.0,
+        1120.0
+      ],
+      "size": [
+        1600.0,
+        260.0
+      ],
+      "text": "Game over → slow motion → restart",
+      "color": {
+        "r": 0.55,
+        "g": 0.36,
+        "b": 0.96,
+        "a": 0.25
+      }
+    }
+  ],
+  "next_id": 43
+}

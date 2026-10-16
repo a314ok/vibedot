@@ -1,0 +1,16 @@
+[package]
+name = "vd_egui"
+description = "Vibedot UI glue: wgpu game viewport in egui, input mapping, theme"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+vd_core.workspace = true
+vd_engine.workspace = true
+vd_render.workspace = true
+eframe.workspace = true
+log.workspace = true
+
+[lints]
+workspace = true

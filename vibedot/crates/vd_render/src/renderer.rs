@@ -886,7 +886,7 @@ impl Renderer {
         self.queue.write_buffer(&self.world_globals.0, 0, bytemuck::bytes_of(&globals));
         let hud = Globals {
             view: affine_to_mat4(&screen_to_clip(out_v)).to_cols_array_2d(),
-            params: [list.time, bold, 0.0, 0.0],
+            params: [list.time, bold, if format.is_srgb() { 0.0 } else { 1.0 }, 0.0],
         };
         self.queue.write_buffer(&self.hud_globals.0, 0, bytemuck::bytes_of(&hud));
 

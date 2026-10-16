@@ -7,6 +7,7 @@ members = [
     "crates/vd_physics",
     "crates/vd_render",
     "crates/vd_engine",
+    "crates/vd_egui",
     "crates/vd_editor",
     "crates/vd_player",
 ]
@@ -26,6 +27,7 @@ vd_blueprint = { path = "crates/vd_blueprint" }
 vd_physics = { path = "crates/vd_physics" }
 vd_render = { path = "crates/vd_render" }
 vd_engine = { path = "crates/vd_engine" }
+vd_egui = { path = "crates/vd_egui" }
 
 glam = { version = "0.34", features = ["serde", "bytemuck"] }
 serde = { version = "1", features = ["derive", "rc"] }

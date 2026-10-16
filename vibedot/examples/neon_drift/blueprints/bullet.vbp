@@ -1,0 +1,315 @@
+{
+  "format": 1,
+  "variables": [],
+  "nodes": [
+    {
+      "id": 1,
+      "op": "event.process",
+      "pos": [
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "id": 2,
+      "op": "node.get_property",
+      "pos": [
+        0.0,
+        120.0
+      ],
+      "values": {
+        "property": {
+          "String": "vel"
+        }
+      }
+    },
+    {
+      "id": 3,
+      "op": "math.mul",
+      "pos": [
+        240.0,
+        120.0
+      ]
+    },
+    {
+      "id": 4,
+      "op": "node.translate",
+      "pos": [
+        480.0,
+        0.0
+      ]
+    },
+    {
+      "id": 5,
+      "op": "event.ready",
+      "pos": [
+        0.0,
+        260.0
+      ]
+    },
+    {
+      "id": 6,
+      "op": "flow.delay",
+      "pos": [
+        240.0,
+        260.0
+      ],
+      "values": {
+        "seconds": {
+          "Number": 1.4
+        }
+      }
+    },
+    {
+      "id": 7,
+      "op": "node.destroy",
+      "pos": [
+        480.0,
+        260.0
+      ]
+    },
+    {
+      "id": 8,
+      "op": "event.body_entered",
+      "pos": [
+        0.0,
+        420.0
+      ]
+    },
+    {
+      "id": 9,
+      "op": "node.in_group",
+      "pos": [
+        0.0,
+        540.0
+      ],
+      "values": {
+        "group": {
+          "String": "enemies"
+        }
+      }
+    },
+    {
+      "id": 10,
+      "op": "flow.branch",
+      "pos": [
+        240.0,
+        420.0
+      ]
+    },
+    {
+      "id": 11,
+      "op": "node.get_position",
+      "pos": [
+        240.0,
+        560.0
+      ]
+    },
+    {
+      "id": 12,
+      "op": "game.emit",
+      "pos": [
+        480.0,
+        420.0
+      ],
+      "values": {
+        "name": {
+          "String": "enemy_killed"
+        }
+      }
+    },
+    {
+      "id": 13,
+      "op": "node.destroy",
+      "pos": [
+        720.0,
+        420.0
+      ]
+    },
+    {
+      "id": 14,
+      "op": "node.destroy",
+      "pos": [
+        960.0,
+        420.0
+      ]
+    },
+    {
+      "id": 15,
+      "op": "game.hitstop",
+      "pos": [
+        1200.0,
+        420.0
+      ],
+      "values": {
+        "seconds": {
+          "Number": 0.035
+        }
+      }
+    }
+  ],
+  "links": [
+    {
+      "from": {
+        "node": 1,
+        "pin": "then"
+      },
+      "to": {
+        "node": 4,
+        "pin": "exec"
+      }
+    },
+    {
+      "from": {
+        "node": 2,
+        "pin": "value"
+      },
+      "to": {
+        "node": 3,
+        "pin": "a"
+      }
+    },
+    {
+      "from": {
+        "node": 1,
+        "pin": "delta"
+      },
+      "to": {
+        "node": 3,
+        "pin": "b"
+      }
+    },
+    {
+      "from": {
+        "node": 3,
+        "pin": "result"
+      },
+      "to": {
+        "node": 4,
+        "pin": "offset"
+      }
+    },
+    {
+      "from": {
+        "node": 5,
+        "pin": "then"
+      },
+      "to": {
+        "node": 6,
+        "pin": "exec"
+      }
+    },
+    {
+      "from": {
+        "node": 6,
+        "pin": "completed"
+      },
+      "to": {
+        "node": 7,
+        "pin": "exec"
+      }
+    },
+    {
+      "from": {
+        "node": 10,
+        "pin": "true"
+      },
+      "to": {
+        "node": 12,
+        "pin": "exec"
+      }
+    },
+    {
+      "from": {
+        "node": 12,
+        "pin": "then"
+      },
+      "to": {
+        "node": 13,
+        "pin": "exec"
+      }
+    },
+    {
+      "from": {
+        "node": 13,
+        "pin": "then"
+      },
+      "to": {
+        "node": 14,
+        "pin": "exec"
+      }
+    },
+    {
+      "from": {
+        "node": 14,
+        "pin": "then"
+      },
+      "to": {
+        "node": 15,
+        "pin": "exec"
+      }
+    },
+    {
+      "from": {
+        "node": 8,
+        "pin": "then"
+      },
+      "to": {
+        "node": 10,
+        "pin": "exec"
+      }
+    },
+    {
+      "from": {
+        "node": 8,
+        "pin": "other"
+      },
+      "to": {
+        "node": 9,
+        "pin": "node"
+      }
+    },
+    {
+      "from": {
+        "node": 9,
+        "pin": "result"
+      },
+      "to": {
+        "node": 10,
+        "pin": "condition"
+      }
+    },
+    {
+      "from": {
+        "node": 8,
+        "pin": "other"
+      },
+      "to": {
+        "node": 11,
+        "pin": "node"
+      }
+    },
+    {
+      "from": {
+        "node": 11,
+        "pin": "position"
+      },
+      "to": {
+        "node": 12,
+        "pin": "payload"
+      }
+    },
+    {
+      "from": {
+        "node": 8,
+        "pin": "other"
+      },
+      "to": {
+        "node": 13,
+        "pin": "node"
+      }
+    }
+  ],
+  "comments": [],
+  "next_id": 16
+}

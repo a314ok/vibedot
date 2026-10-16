@@ -3,7 +3,7 @@
 
 struct Globals {
     view: mat4x4<f32>,
-    // x: time, y: text emboldening offset, zw: unused
+    // x: time, y: text emboldening offset, z: encode sRGB (HUD), w: unused
     params: vec4<f32>,
 };
 
@@ -147,9 +147,19 @@ fn fs_scene(in: VOut) -> SceneOut {
     return out;
 }
 
+fn encode_srgb(c: vec3<f32>) -> vec3<f32> {
+    let lo = c * 12.92;
+    let hi = 1.055 * pow(max(c, vec3<f32>(0.0)), vec3<f32>(1.0 / 2.4)) - 0.055;
+    return select(hi, lo, c <= vec3<f32>(0.0031308));
+}
+
 @fragment
 fn fs_hud(in: VOut) -> @location(0) vec4<f32> {
-    let c = shade(in);
+    var c = shade(in);
+    // Non-sRGB targets store display-encoded values (params.z = 1).
+    if (g.params.z > 0.5) {
+        c = vec4<f32>(encode_srgb(clamp(c.rgb, vec3<f32>(0.0), vec3<f32>(1.0))), c.a);
+    }
     if (in.size_em.w > 0.5) {
         return vec4<f32>(c.rgb * c.a, 0.0);
     }

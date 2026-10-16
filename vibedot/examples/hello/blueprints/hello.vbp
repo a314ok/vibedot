@@ -1,0 +1,62 @@
+{
+  "format": 1,
+  "variables": [],
+  "nodes": [
+    {
+      "id": 1,
+      "op": "event.process",
+      "pos": [
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "id": 2,
+      "op": "math.wave",
+      "pos": [
+        0.0,
+        140.0
+      ],
+      "values": {
+        "amplitude": {
+          "Number": 8.0
+        },
+        "frequency": {
+          "Number": 0.5
+        }
+      }
+    },
+    {
+      "id": 3,
+      "op": "node.set_rotation",
+      "pos": [
+        280.0,
+        0.0
+      ]
+    }
+  ],
+  "links": [
+    {
+      "from": {
+        "node": 1,
+        "pin": "then"
+      },
+      "to": {
+        "node": 3,
+        "pin": "exec"
+      }
+    },
+    {
+      "from": {
+        "node": 2,
+        "pin": "result"
+      },
+      "to": {
+        "node": 3,
+        "pin": "degrees"
+      }
+    }
+  ],
+  "comments": [],
+  "next_id": 4
+}

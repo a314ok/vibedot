@@ -12,6 +12,7 @@ pub mod game;
 pub mod input;
 pub mod project;
 pub mod script;
+pub mod templates;
 
 pub use assets::{AssetSource, DirAssets, MemAssets, PackAssets, PackError, crc32, pack_source, write_pack};
 pub use draw::{draw_collision_shapes, draw_tree, env_settings};

@@ -17,7 +17,7 @@ pub enum Op {
     Round, Floor, Ceil, Sign, Wave, RandomRange, RandomInt, Chance, Time,
     // vectors
     MakeVec, BreakVec, Length, Normalize, Distance, DirectionTo, Dot, FromAngle, Angle, RotateVec, MoveToward,
-    RandomInCircle,
+    RandomInCircle, ClampVec,
     // logic
     Gt, Ge, Lt, Le, Eq, Ne, And, Or, Not, Select,
     // text / color / arrays
@@ -186,6 +186,11 @@ pub(crate) fn call(op: Op, a: &[Variant], outs: &mut [Variant], cx: &mut ExecCtx
             let delta = to - from;
             let len = delta.length();
             out0(outs, Variant::Vec2(if len <= d || len < 1e-6 { to } else { from + delta / len * d }));
+        }
+        ClampVec => {
+            let v = vd_core::gd::Vector2::from(a[0].to_vec2());
+            let r = v.clamp(a[1].to_vec2().into(), a[2].to_vec2().into());
+            out0(outs, Variant::Vec2(r.into()));
         }
         RandomInCircle => {
             let r = a[0].to_f32();

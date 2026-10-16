@@ -302,6 +302,8 @@ pub static LIBRARY: &[NodeDef] = &[
     def!("vec.angle", "Vector Angle", "Vector", "Angle of the vector in degrees.", Pure(Op::Angle), in [v2("vector", 1.0, 0.0)], out [out("degrees", T::Number)]),
     def!("vec.rotate", "Rotate Vector", "Vector", "Rotates a vector by degrees.", Pure(Op::RotateVec), in [v2("vector", 1.0, 0.0), num("degrees", 90.0)], out [out("result", T::Vec2)]),
     def!("vec.move_toward", "Move Toward", "Vector", "Moves `from` toward `to` by at most `delta`.", Pure(Op::MoveToward), in [v2("from", 0.0, 0.0), v2("to", 0.0, 0.0), num("delta", 1.0)], out [out("result", T::Vec2)]),
+    def!("vec.clamp", "Clamp Vector", "Vector", "Clamps each component between min and max (Godot `Vector2.clamp`).", Pure(Op::ClampVec),
+        in [v2("vector", 0.0, 0.0), v2("min", -100.0, -100.0), v2("max", 100.0, 100.0)], out [out("result", T::Vec2)]),
     def!("vec.random_in_circle", "Random In Circle", "Vector", "Random point inside a circle of `radius`.", Pure(Op::RandomInCircle), in [num("radius", 1.0)], out [out("point", T::Vec2)]),
 
     // ------------------------------------------------------------------ logic

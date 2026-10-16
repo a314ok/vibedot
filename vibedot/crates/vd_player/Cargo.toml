@@ -1,7 +1,21 @@
 [package]
 name = "vd_player"
+description = "Vibedot standalone game player"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
 
+[[bin]]
+name = "vibedot-player"
+path = "src/main.rs"
+
 [dependencies]
+vd_core.workspace = true
+vd_engine.workspace = true
+vd_render.workspace = true
+vd_egui.workspace = true
+eframe.workspace = true
+image.workspace = true
+
+[lints]
+workspace = true

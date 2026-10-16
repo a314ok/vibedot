@@ -1,0 +1,72 @@
+{
+  "format": 1,
+  "root": {
+    "name": "Main",
+    "type": "Node2D",
+    "children": [
+      {
+        "name": "WorldEnvironment",
+        "type": "WorldEnvironment",
+        "clear_color": {
+          "r": 0.004391442,
+          "g": 0.004391442,
+          "b": 0.009134057,
+          "a": 1.0
+        },
+        "ambient": 1.0,
+        "ambient_color": {
+          "r": 1.0,
+          "g": 1.0,
+          "b": 1.0,
+          "a": 1.0
+        },
+        "exposure": 1.0,
+        "tonemap": "Aces",
+        "bloom": true,
+        "bloom_intensity": 0.6,
+        "bloom_threshold": 1.0,
+        "bloom_radius": 1.0,
+        "vignette": 0.25,
+        "chromatic_aberration": 0.0,
+        "film_grain": 0.0,
+        "scanlines": 0.0,
+        "crt_curvature": 0.0,
+        "saturation": 1.0,
+        "contrast": 1.0,
+        "tint": {
+          "r": 1.0,
+          "g": 1.0,
+          "b": 1.0,
+          "a": 1.0
+        },
+        "pixelate": 1.0
+      },
+      {
+        "name": "Camera2D",
+        "type": "Camera2D",
+        "current": true,
+        "zoom": 1.0,
+        "smoothing": 0.0,
+        "shake_strength": 12.0,
+        "shake_decay": 1.5
+      },
+      {
+        "name": "Hello",
+        "type": "Label",
+        "text": "Hello, Hello Vibedot!",
+        "font_size": 48.0,
+        "color": {
+          "r": 1.0,
+          "g": 1.0,
+          "b": 1.0,
+          "a": 1.0
+        },
+        "emission": 0.0,
+        "align": "Center",
+        "screen_space": false,
+        "monospace": false,
+        "script": "blueprints/hello.vbp"
+      }
+    ]
+  }
+}

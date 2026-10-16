@@ -1,0 +1,537 @@
+{
+  "format": 1,
+  "variables": [
+    {
+      "name": "speed",
+      "ty": "Number",
+      "default": {
+        "Number": 430.0
+      },
+      "exposed": false
+    },
+    {
+      "name": "bullet_speed",
+      "ty": "Number",
+      "default": {
+        "Number": 950.0
+      },
+      "exposed": false
+    }
+  ],
+  "nodes": [
+    {
+      "id": 1,
+      "op": "event.process",
+      "pos": [
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "id": 2,
+      "op": "input.vector",
+      "pos": [
+        0.0,
+        120.0
+      ]
+    },
+    {
+      "id": 3,
+      "op": "var.get",
+      "pos": [
+        0.0,
+        230.0
+      ],
+      "values": {
+        "var": {
+          "String": "speed"
+        }
+      }
+    },
+    {
+      "id": 4,
+      "op": "math.mul",
+      "pos": [
+        230.0,
+        160.0
+      ]
+    },
+    {
+      "id": 5,
+      "op": "physics.get_velocity",
+      "pos": [
+        230.0,
+        280.0
+      ]
+    },
+    {
+      "id": 6,
+      "op": "math.lerp",
+      "pos": [
+        460.0,
+        200.0
+      ],
+      "values": {
+        "t": {
+          "Number": 0.18
+        }
+      }
+    },
+    {
+      "id": 7,
+      "op": "physics.set_velocity",
+      "pos": [
+        700.0,
+        0.0
+      ]
+    },
+    {
+      "id": 8,
+      "op": "vec.length",
+      "pos": [
+        700.0,
+        160.0
+      ]
+    },
+    {
+      "id": 9,
+      "op": "cmp.gt",
+      "pos": [
+        900.0,
+        160.0
+      ],
+      "values": {
+        "b": {
+          "Number": 20.0
+        }
+      }
+    },
+    {
+      "id": 10,
+      "op": "flow.branch",
+      "pos": [
+        940.0,
+        0.0
+      ]
+    },
+    {
+      "id": 11,
+      "op": "node.get_position",
+      "pos": [
+        940.0,
+        260.0
+      ]
+    },
+    {
+      "id": 12,
+      "op": "math.add",
+      "pos": [
+        1160.0,
+        220.0
+      ]
+    },
+    {
+      "id": 13,
+      "op": "node.look_at",
+      "pos": [
+        1200.0,
+        0.0
+      ]
+    },
+    {
+      "id": 14,
+      "op": "event.action_pressed",
+      "pos": [
+        0.0,
+        420.0
+      ],
+      "values": {
+        "action": {
+          "String": "fire"
+        }
+      }
+    },
+    {
+      "id": 15,
+      "op": "node.get_position",
+      "pos": [
+        0.0,
+        540.0
+      ]
+    },
+    {
+      "id": 16,
+      "op": "node.spawn",
+      "pos": [
+        260.0,
+        420.0
+      ],
+      "values": {
+        "scene": {
+          "String": "scenes/bullet.vscn"
+        }
+      }
+    },
+    {
+      "id": 17,
+      "op": "node.get_rotation",
+      "pos": [
+        260.0,
+        600.0
+      ]
+    },
+    {
+      "id": 18,
+      "op": "var.get",
+      "pos": [
+        260.0,
+        690.0
+      ],
+      "values": {
+        "var": {
+          "String": "bullet_speed"
+        }
+      }
+    },
+    {
+      "id": 19,
+      "op": "vec.from_angle",
+      "pos": [
+        480.0,
+        600.0
+      ]
+    },
+    {
+      "id": 20,
+      "op": "node.set_property",
+      "pos": [
+        720.0,
+        420.0
+      ],
+      "values": {
+        "property": {
+          "String": "vel"
+        }
+      }
+    },
+    {
+      "id": 21,
+      "op": "game.shake",
+      "pos": [
+        960.0,
+        420.0
+      ],
+      "values": {
+        "amount": {
+          "Number": 0.06
+        }
+      }
+    },
+    {
+      "id": 22,
+      "op": "event.body_entered",
+      "pos": [
+        0.0,
+        820.0
+      ]
+    },
+    {
+      "id": 23,
+      "op": "node.in_group",
+      "pos": [
+        240.0,
+        920.0
+      ],
+      "values": {
+        "group": {
+          "String": "enemies"
+        }
+      }
+    },
+    {
+      "id": 24,
+      "op": "flow.branch",
+      "pos": [
+        260.0,
+        820.0
+      ]
+    },
+    {
+      "id": 25,
+      "op": "game.emit",
+      "pos": [
+        480.0,
+        820.0
+      ],
+      "values": {
+        "name": {
+          "String": "game_over"
+        }
+      }
+    }
+  ],
+  "links": [
+    {
+      "from": {
+        "node": 2,
+        "pin": "vector"
+      },
+      "to": {
+        "node": 4,
+        "pin": "a"
+      }
+    },
+    {
+      "from": {
+        "node": 3,
+        "pin": "value"
+      },
+      "to": {
+        "node": 4,
+        "pin": "b"
+      }
+    },
+    {
+      "from": {
+        "node": 5,
+        "pin": "velocity"
+      },
+      "to": {
+        "node": 6,
+        "pin": "a"
+      }
+    },
+    {
+      "from": {
+        "node": 4,
+        "pin": "result"
+      },
+      "to": {
+        "node": 6,
+        "pin": "b"
+      }
+    },
+    {
+      "from": {
+        "node": 6,
+        "pin": "result"
+      },
+      "to": {
+        "node": 7,
+        "pin": "velocity"
+      }
+    },
+    {
+      "from": {
+        "node": 1,
+        "pin": "then"
+      },
+      "to": {
+        "node": 7,
+        "pin": "exec"
+      }
+    },
+    {
+      "from": {
+        "node": 10,
+        "pin": "true"
+      },
+      "to": {
+        "node": 13,
+        "pin": "exec"
+      }
+    },
+    {
+      "from": {
+        "node": 7,
+        "pin": "then"
+      },
+      "to": {
+        "node": 10,
+        "pin": "exec"
+      }
+    },
+    {
+      "from": {
+        "node": 6,
+        "pin": "result"
+      },
+      "to": {
+        "node": 8,
+        "pin": "vector"
+      }
+    },
+    {
+      "from": {
+        "node": 8,
+        "pin": "length"
+      },
+      "to": {
+        "node": 9,
+        "pin": "a"
+      }
+    },
+    {
+      "from": {
+        "node": 9,
+        "pin": "result"
+      },
+      "to": {
+        "node": 10,
+        "pin": "condition"
+      }
+    },
+    {
+      "from": {
+        "node": 11,
+        "pin": "position"
+      },
+      "to": {
+        "node": 12,
+        "pin": "a"
+      }
+    },
+    {
+      "from": {
+        "node": 6,
+        "pin": "result"
+      },
+      "to": {
+        "node": 12,
+        "pin": "b"
+      }
+    },
+    {
+      "from": {
+        "node": 12,
+        "pin": "result"
+      },
+      "to": {
+        "node": 13,
+        "pin": "target"
+      }
+    },
+    {
+      "from": {
+        "node": 14,
+        "pin": "then"
+      },
+      "to": {
+        "node": 16,
+        "pin": "exec"
+      }
+    },
+    {
+      "from": {
+        "node": 16,
+        "pin": "then"
+      },
+      "to": {
+        "node": 20,
+        "pin": "exec"
+      }
+    },
+    {
+      "from": {
+        "node": 20,
+        "pin": "then"
+      },
+      "to": {
+        "node": 21,
+        "pin": "exec"
+      }
+    },
+    {
+      "from": {
+        "node": 15,
+        "pin": "position"
+      },
+      "to": {
+        "node": 16,
+        "pin": "position"
+      }
+    },
+    {
+      "from": {
+        "node": 16,
+        "pin": "node"
+      },
+      "to": {
+        "node": 20,
+        "pin": "node"
+      }
+    },
+    {
+      "from": {
+        "node": 17,
+        "pin": "degrees"
+      },
+      "to": {
+        "node": 19,
+        "pin": "degrees"
+      }
+    },
+    {
+      "from": {
+        "node": 18,
+        "pin": "value"
+      },
+      "to": {
+        "node": 19,
+        "pin": "length"
+      }
+    },
+    {
+      "from": {
+        "node": 19,
+        "pin": "vector"
+      },
+      "to": {
+        "node": 20,
+        "pin": "value"
+      }
+    },
+    {
+      "from": {
+        "node": 24,
+        "pin": "true"
+      },
+      "to": {
+        "node": 25,
+        "pin": "exec"
+      }
+    },
+    {
+      "from": {
+        "node": 22,
+        "pin": "then"
+      },
+      "to": {
+        "node": 24,
+        "pin": "exec"
+      }
+    },
+    {
+      "from": {
+        "node": 22,
+        "pin": "other"
+      },
+      "to": {
+        "node": 23,
+        "pin": "node"
+      }
+    },
+    {
+      "from": {
+        "node": 23,
+        "pin": "result"
+      },
+      "to": {
+        "node": 24,
+        "pin": "condition"
+      }
+    }
+  ],
+  "comments": [],
+  "next_id": 26
+}

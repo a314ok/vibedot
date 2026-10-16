@@ -1,0 +1,698 @@
+{
+  "format": 1,
+  "root": {
+    "name": "Main",
+    "type": "Node2D",
+    "script": "blueprints/main.vbp",
+    "children": [
+      {
+        "name": "WorldEnvironment",
+        "type": "WorldEnvironment",
+        "clear_color": {
+          "r": 0.001517635,
+          "g": 0.001821162,
+          "b": 0.0047769533,
+          "a": 1.0
+        },
+        "ambient": 0.32,
+        "ambient_color": {
+          "r": 0.32314324,
+          "g": 0.3813261,
+          "b": 1.0,
+          "a": 1.0
+        },
+        "exposure": 1.0,
+        "tonemap": "Aces",
+        "bloom": true,
+        "bloom_intensity": 0.9,
+        "bloom_threshold": 0.75,
+        "bloom_radius": 1.0,
+        "vignette": 0.55,
+        "chromatic_aberration": 1.4,
+        "film_grain": 0.035,
+        "scanlines": 0.12,
+        "crt_curvature": 0.0,
+        "saturation": 1.15,
+        "contrast": 1.08,
+        "tint": {
+          "r": 1.0,
+          "g": 1.0,
+          "b": 1.0,
+          "a": 1.0
+        },
+        "pixelate": 1.0
+      },
+      {
+        "name": "Backdrop",
+        "type": "Node2D",
+        "z_index": -50,
+        "children": [
+          {
+            "name": "Nebula0",
+            "type": "Shape2D",
+            "shape": "Circle",
+            "size": [
+              900.0,
+              900.0
+            ],
+            "corner_radius": 8.0,
+            "thickness": 6.0,
+            "color": {
+              "r": 0.2581829,
+              "g": 0.10702311,
+              "b": 0.92158204,
+              "a": 0.12
+            },
+            "emission": 0.0,
+            "blend": "Additive",
+            "softness": 405.0,
+            "transform": {
+              "position": [
+                -500.0,
+                -300.0
+              ],
+              "rotation": 0.0,
+              "scale": [
+                1.0,
+                1.0
+              ]
+            }
+          },
+          {
+            "name": "Nebula1",
+            "type": "Shape2D",
+            "shape": "Circle",
+            "size": [
+              1100.0,
+              1100.0
+            ],
+            "corner_radius": 8.0,
+            "thickness": 6.0,
+            "color": {
+              "r": 0.015996292,
+              "g": 0.6514057,
+              "b": 0.8549927,
+              "a": 0.12
+            },
+            "emission": 0.0,
+            "blend": "Additive",
+            "softness": 495.0,
+            "transform": {
+              "position": [
+                600.0,
+                350.0
+              ],
+              "rotation": 0.0,
+              "scale": [
+                1.0,
+                1.0
+              ]
+            }
+          },
+          {
+            "name": "Nebula2",
+            "type": "Shape2D",
+            "shape": "Circle",
+            "size": [
+              700.0,
+              700.0
+            ],
+            "corner_radius": 8.0,
+            "thickness": 6.0,
+            "color": {
+              "r": 0.90466136,
+              "g": 0.049706563,
+              "b": 0.111932434,
+              "a": 0.12
+            },
+            "emission": 0.0,
+            "blend": "Additive",
+            "softness": 315.0,
+            "transform": {
+              "position": [
+                -200.0,
+                500.0
+              ],
+              "rotation": 0.0,
+              "scale": [
+                1.0,
+                1.0
+              ]
+            }
+          },
+          {
+            "name": "Stars",
+            "type": "Particles2D",
+            "emitting": true,
+            "rate": 40.0,
+            "burst": 400,
+            "one_shot": false,
+            "lifetime": 12.0,
+            "lifetime_random": 0.6,
+            "direction": 0.0,
+            "spread": 3.14,
+            "speed_min": 2.0,
+            "speed_max": 8.0,
+            "gravity": [
+              0.0,
+              0.0
+            ],
+            "damping": 0.0,
+            "emit_radius": 1400.0,
+            "size_start": 3.0,
+            "size_end": 3.0,
+            "color_start": {
+              "r": 0.8,
+              "g": 0.85,
+              "b": 1.0,
+              "a": 0.9
+            },
+            "color_end": {
+              "r": 0.8,
+              "g": 0.85,
+              "b": 1.0,
+              "a": 0.0
+            },
+            "emission": 1.2,
+            "shape": "Circle",
+            "blend": "Additive",
+            "world_space": true,
+            "max_particles": 1200
+          }
+        ]
+      },
+      {
+        "name": "Arena",
+        "type": "Node2D",
+        "children": [
+          {
+            "name": "Top",
+            "type": "Body2D",
+            "body_type": "Static",
+            "shape": "Rect",
+            "size": [
+              2000.0,
+              24.0
+            ],
+            "radius": 32.0,
+            "velocity": [
+              0.0,
+              0.0
+            ],
+            "gravity_scale": 0.0,
+            "mass": 1.0,
+            "bounce": 0.0,
+            "friction": 0.2,
+            "layer": 1,
+            "mask": 1,
+            "clamp_to_view": false,
+            "transform": {
+              "position": [
+                0.0,
+                -700.0
+              ],
+              "rotation": 0.0,
+              "scale": [
+                1.0,
+                1.0
+              ]
+            },
+            "groups": [
+              "walls"
+            ],
+            "children": [
+              {
+                "name": "Glow",
+                "type": "Shape2D",
+                "shape": "RoundedRect",
+                "size": [
+                  2000.0,
+                  6.0
+                ],
+                "corner_radius": 4.0,
+                "thickness": 6.0,
+                "color": {
+                  "r": 0.2581829,
+                  "g": 0.10702311,
+                  "b": 0.92158204,
+                  "a": 1.0
+                },
+                "emission": 2.5,
+                "blend": "Alpha",
+                "softness": 0.0
+              }
+            ]
+          },
+          {
+            "name": "Bottom",
+            "type": "Body2D",
+            "body_type": "Static",
+            "shape": "Rect",
+            "size": [
+              2000.0,
+              24.0
+            ],
+            "radius": 32.0,
+            "velocity": [
+              0.0,
+              0.0
+            ],
+            "gravity_scale": 0.0,
+            "mass": 1.0,
+            "bounce": 0.0,
+            "friction": 0.2,
+            "layer": 1,
+            "mask": 1,
+            "clamp_to_view": false,
+            "transform": {
+              "position": [
+                0.0,
+                700.0
+              ],
+              "rotation": 0.0,
+              "scale": [
+                1.0,
+                1.0
+              ]
+            },
+            "groups": [
+              "walls"
+            ],
+            "children": [
+              {
+                "name": "Glow",
+                "type": "Shape2D",
+                "shape": "RoundedRect",
+                "size": [
+                  2000.0,
+                  6.0
+                ],
+                "corner_radius": 4.0,
+                "thickness": 6.0,
+                "color": {
+                  "r": 0.2581829,
+                  "g": 0.10702311,
+                  "b": 0.92158204,
+                  "a": 1.0
+                },
+                "emission": 2.5,
+                "blend": "Alpha",
+                "softness": 0.0
+              }
+            ]
+          },
+          {
+            "name": "Left",
+            "type": "Body2D",
+            "body_type": "Static",
+            "shape": "Rect",
+            "size": [
+              24.0,
+              1400.0
+            ],
+            "radius": 32.0,
+            "velocity": [
+              0.0,
+              0.0
+            ],
+            "gravity_scale": 0.0,
+            "mass": 1.0,
+            "bounce": 0.0,
+            "friction": 0.2,
+            "layer": 1,
+            "mask": 1,
+            "clamp_to_view": false,
+            "transform": {
+              "position": [
+                -1000.0,
+                0.0
+              ],
+              "rotation": 0.0,
+              "scale": [
+                1.0,
+                1.0
+              ]
+            },
+            "groups": [
+              "walls"
+            ],
+            "children": [
+              {
+                "name": "Glow",
+                "type": "Shape2D",
+                "shape": "RoundedRect",
+                "size": [
+                  6.0,
+                  1400.0
+                ],
+                "corner_radius": 4.0,
+                "thickness": 6.0,
+                "color": {
+                  "r": 0.2581829,
+                  "g": 0.10702311,
+                  "b": 0.92158204,
+                  "a": 1.0
+                },
+                "emission": 2.5,
+                "blend": "Alpha",
+                "softness": 0.0
+              }
+            ]
+          },
+          {
+            "name": "Right",
+            "type": "Body2D",
+            "body_type": "Static",
+            "shape": "Rect",
+            "size": [
+              24.0,
+              1400.0
+            ],
+            "radius": 32.0,
+            "velocity": [
+              0.0,
+              0.0
+            ],
+            "gravity_scale": 0.0,
+            "mass": 1.0,
+            "bounce": 0.0,
+            "friction": 0.2,
+            "layer": 1,
+            "mask": 1,
+            "clamp_to_view": false,
+            "transform": {
+              "position": [
+                1000.0,
+                0.0
+              ],
+              "rotation": 0.0,
+              "scale": [
+                1.0,
+                1.0
+              ]
+            },
+            "groups": [
+              "walls"
+            ],
+            "children": [
+              {
+                "name": "Glow",
+                "type": "Shape2D",
+                "shape": "RoundedRect",
+                "size": [
+                  6.0,
+                  1400.0
+                ],
+                "corner_radius": 4.0,
+                "thickness": 6.0,
+                "color": {
+                  "r": 0.2581829,
+                  "g": 0.10702311,
+                  "b": 0.92158204,
+                  "a": 1.0
+                },
+                "emission": 2.5,
+                "blend": "Alpha",
+                "softness": 0.0
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Player",
+        "type": "Body2D",
+        "body_type": "Character",
+        "shape": "Circle",
+        "size": [
+          64.0,
+          64.0
+        ],
+        "radius": 18.0,
+        "velocity": [
+          0.0,
+          0.0
+        ],
+        "gravity_scale": 0.0,
+        "mass": 1.0,
+        "bounce": 0.0,
+        "friction": 0.2,
+        "layer": 1,
+        "mask": 1,
+        "clamp_to_view": false,
+        "groups": [
+          "player"
+        ],
+        "script": "blueprints/player.vbp",
+        "unique_name_in_owner": true,
+        "children": [
+          {
+            "name": "Hull",
+            "type": "Shape2D",
+            "shape": "Triangle",
+            "size": [
+              58.0,
+              42.0
+            ],
+            "corner_radius": 8.0,
+            "thickness": 6.0,
+            "color": {
+              "r": 0.015996292,
+              "g": 0.6514057,
+              "b": 0.8549927,
+              "a": 1.0
+            },
+            "emission": 1.3,
+            "blend": "Alpha",
+            "softness": 0.0
+          },
+          {
+            "name": "Core",
+            "type": "Shape2D",
+            "shape": "Circle",
+            "size": [
+              10.0,
+              10.0
+            ],
+            "corner_radius": 8.0,
+            "thickness": 6.0,
+            "color": {
+              "r": 1.0,
+              "g": 1.0,
+              "b": 1.0,
+              "a": 1.0
+            },
+            "emission": 4.0,
+            "blend": "Alpha",
+            "softness": 0.0,
+            "transform": {
+              "position": [
+                -4.0,
+                0.0
+              ],
+              "rotation": 0.0,
+              "scale": [
+                1.0,
+                1.0
+              ]
+            }
+          },
+          {
+            "name": "Light",
+            "type": "PointLight2D",
+            "color": {
+              "r": 0.015996292,
+              "g": 0.6514057,
+              "b": 0.8549927,
+              "a": 1.0
+            },
+            "energy": 1.8,
+            "radius": 320.0,
+            "falloff": 2.0,
+            "flicker": 0.0
+          },
+          {
+            "name": "Trail",
+            "type": "Particles2D",
+            "emitting": true,
+            "rate": 110.0,
+            "burst": 0,
+            "one_shot": false,
+            "lifetime": 0.55,
+            "lifetime_random": 0.3,
+            "direction": 3.1415927,
+            "spread": 0.35,
+            "speed_min": 60.0,
+            "speed_max": 160.0,
+            "gravity": [
+              0.0,
+              0.0
+            ],
+            "damping": 2.0,
+            "emit_radius": 0.0,
+            "size_start": 10.0,
+            "size_end": 0.0,
+            "color_start": {
+              "r": 0.015996292,
+              "g": 0.6514057,
+              "b": 0.8549927,
+              "a": 1.0
+            },
+            "color_end": {
+              "r": 0.2581829,
+              "g": 0.10702311,
+              "b": 0.92158204,
+              "a": 0.0
+            },
+            "emission": 3.0,
+            "shape": "Circle",
+            "blend": "Additive",
+            "world_space": true,
+            "max_particles": 2000,
+            "transform": {
+              "position": [
+                -18.0,
+                0.0
+              ],
+              "rotation": 0.0,
+              "scale": [
+                1.0,
+                1.0
+              ]
+            }
+          },
+          {
+            "name": "Camera2D",
+            "type": "Camera2D",
+            "current": true,
+            "zoom": 1.0,
+            "smoothing": 6.0,
+            "shake_strength": 12.0,
+            "shake_decay": 1.5
+          },
+          {
+            "name": "GameOver",
+            "type": "Label",
+            "text": "GAME OVER",
+            "font_size": 96.0,
+            "color": {
+              "r": 0.90466136,
+              "g": 0.049706563,
+              "b": 0.111932434,
+              "a": 1.0
+            },
+            "emission": 3.0,
+            "align": "Center",
+            "screen_space": false,
+            "monospace": false,
+            "visible": false,
+            "z_index": 100,
+            "unique_name_in_owner": true
+          }
+        ]
+      },
+      {
+        "name": "SpawnTimer",
+        "type": "Timer",
+        "wait_time": 1.1,
+        "one_shot": false,
+        "autostart": true
+      },
+      {
+        "name": "OrbTimer",
+        "type": "Timer",
+        "wait_time": 1.8,
+        "one_shot": false,
+        "autostart": true
+      },
+      {
+        "name": "HUD",
+        "type": "Node",
+        "children": [
+          {
+            "name": "Score",
+            "type": "Label",
+            "text": "SCORE  0",
+            "font_size": 26.0,
+            "color": {
+              "r": 1.0,
+              "g": 1.0,
+              "b": 1.0,
+              "a": 1.0
+            },
+            "emission": 0.0,
+            "align": "Left",
+            "screen_space": true,
+            "monospace": true,
+            "transform": {
+              "position": [
+                28.0,
+                34.0
+              ],
+              "rotation": 0.0,
+              "scale": [
+                1.0,
+                1.0
+              ]
+            },
+            "unique_name_in_owner": true
+          },
+          {
+            "name": "Hint",
+            "type": "Label",
+            "text": "WASD / arrows: fly    J or click: shoot    Esc: quit",
+            "font_size": 16.0,
+            "color": {
+              "r": 0.29613832,
+              "g": 0.3662527,
+              "b": 0.47932023,
+              "a": 1.0
+            },
+            "emission": 0.0,
+            "align": "Left",
+            "screen_space": true,
+            "monospace": false,
+            "transform": {
+              "position": [
+                28.0,
+                70.0
+              ],
+              "rotation": 0.0,
+              "scale": [
+                1.0,
+                1.0
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "name": "Title",
+        "type": "Label",
+        "text": "NEON DRIFT",
+        "font_size": 64.0,
+        "color": {
+          "r": 0.015996292,
+          "g": 0.6514057,
+          "b": 0.8549927,
+          "a": 1.0
+        },
+        "emission": 2.0,
+        "align": "Center",
+        "screen_space": false,
+        "monospace": false,
+        "transform": {
+          "position": [
+            0.0,
+            -560.0
+          ],
+          "rotation": 0.0,
+          "scale": [
+            1.0,
+            1.0
+          ]
+        }
+      }
+    ]
+  }
+}

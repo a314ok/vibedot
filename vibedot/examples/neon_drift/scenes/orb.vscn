@@ -1,0 +1,85 @@
+{
+  "format": 1,
+  "root": {
+    "name": "Orb",
+    "type": "Body2D",
+    "body_type": "Area",
+    "shape": "Circle",
+    "size": [
+      64.0,
+      64.0
+    ],
+    "radius": 16.0,
+    "velocity": [
+      0.0,
+      0.0
+    ],
+    "gravity_scale": 0.0,
+    "mass": 1.0,
+    "bounce": 0.0,
+    "friction": 0.2,
+    "layer": 2,
+    "mask": 1,
+    "clamp_to_view": false,
+    "groups": [
+      "orbs"
+    ],
+    "script": "blueprints/orb.vbp",
+    "children": [
+      {
+        "name": "Glow",
+        "type": "Shape2D",
+        "shape": "Circle",
+        "size": [
+          26.0,
+          26.0
+        ],
+        "corner_radius": 8.0,
+        "thickness": 6.0,
+        "color": {
+          "r": 0.9646863,
+          "g": 0.5209957,
+          "b": 0.017641952,
+          "a": 1.0
+        },
+        "emission": 2.5,
+        "blend": "Alpha",
+        "softness": 3.0
+      },
+      {
+        "name": "Halo",
+        "type": "Shape2D",
+        "shape": "Ring",
+        "size": [
+          40.0,
+          40.0
+        ],
+        "corner_radius": 8.0,
+        "thickness": 2.0,
+        "color": {
+          "r": 0.9646863,
+          "g": 0.5209957,
+          "b": 0.017641952,
+          "a": 0.7
+        },
+        "emission": 2.0,
+        "blend": "Additive",
+        "softness": 0.0
+      },
+      {
+        "name": "Light",
+        "type": "PointLight2D",
+        "color": {
+          "r": 0.9646863,
+          "g": 0.5209957,
+          "b": 0.017641952,
+          "a": 1.0
+        },
+        "energy": 1.0,
+        "radius": 140.0,
+        "falloff": 2.0,
+        "flicker": 0.0
+      }
+    ]
+  }
+}

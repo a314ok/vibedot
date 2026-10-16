@@ -1,0 +1,169 @@
+{
+  "format": 1,
+  "variables": [],
+  "nodes": [
+    {
+      "id": 1,
+      "op": "event.ready",
+      "pos": [
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "id": 2,
+      "op": "flow.delay",
+      "pos": [
+        240.0,
+        0.0
+      ],
+      "values": {
+        "seconds": {
+          "Number": 1.0
+        }
+      }
+    },
+    {
+      "id": 3,
+      "op": "node.destroy",
+      "pos": [
+        480.0,
+        0.0
+      ]
+    },
+    {
+      "id": 4,
+      "op": "event.process",
+      "pos": [
+        0.0,
+        160.0
+      ]
+    },
+    {
+      "id": 5,
+      "op": "node.get_node",
+      "pos": [
+        0.0,
+        280.0
+      ],
+      "values": {
+        "path": {
+          "String": "Flash"
+        }
+      }
+    },
+    {
+      "id": 6,
+      "op": "node.get_property",
+      "pos": [
+        240.0,
+        280.0
+      ],
+      "values": {
+        "property": {
+          "String": "energy"
+        }
+      }
+    },
+    {
+      "id": 7,
+      "op": "math.mul",
+      "pos": [
+        480.0,
+        280.0
+      ],
+      "values": {
+        "b": {
+          "Number": 0.9
+        }
+      }
+    },
+    {
+      "id": 8,
+      "op": "node.set_property",
+      "pos": [
+        480.0,
+        160.0
+      ],
+      "values": {
+        "property": {
+          "String": "energy"
+        }
+      }
+    }
+  ],
+  "links": [
+    {
+      "from": {
+        "node": 1,
+        "pin": "then"
+      },
+      "to": {
+        "node": 2,
+        "pin": "exec"
+      }
+    },
+    {
+      "from": {
+        "node": 2,
+        "pin": "completed"
+      },
+      "to": {
+        "node": 3,
+        "pin": "exec"
+      }
+    },
+    {
+      "from": {
+        "node": 4,
+        "pin": "then"
+      },
+      "to": {
+        "node": 8,
+        "pin": "exec"
+      }
+    },
+    {
+      "from": {
+        "node": 5,
+        "pin": "node"
+      },
+      "to": {
+        "node": 6,
+        "pin": "node"
+      }
+    },
+    {
+      "from": {
+        "node": 5,
+        "pin": "node"
+      },
+      "to": {
+        "node": 8,
+        "pin": "node"
+      }
+    },
+    {
+      "from": {
+        "node": 6,
+        "pin": "value"
+      },
+      "to": {
+        "node": 7,
+        "pin": "a"
+      }
+    },
+    {
+      "from": {
+        "node": 7,
+        "pin": "result"
+      },
+      "to": {
+        "node": 8,
+        "pin": "value"
+      }
+    }
+  ],
+  "comments": [],
+  "next_id": 9
+}

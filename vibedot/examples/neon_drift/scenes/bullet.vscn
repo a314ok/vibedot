@@ -1,0 +1,62 @@
+{
+  "format": 1,
+  "root": {
+    "name": "Bullet",
+    "type": "Body2D",
+    "body_type": "Area",
+    "shape": "Circle",
+    "size": [
+      64.0,
+      64.0
+    ],
+    "radius": 7.0,
+    "velocity": [
+      0.0,
+      0.0
+    ],
+    "gravity_scale": 0.0,
+    "mass": 1.0,
+    "bounce": 0.0,
+    "friction": 0.2,
+    "layer": 2,
+    "mask": 1,
+    "clamp_to_view": false,
+    "script": "blueprints/bullet.vbp",
+    "children": [
+      {
+        "name": "Core",
+        "type": "Shape2D",
+        "shape": "Circle",
+        "size": [
+          12.0,
+          12.0
+        ],
+        "corner_radius": 8.0,
+        "thickness": 6.0,
+        "color": {
+          "r": 0.7,
+          "g": 1.0,
+          "b": 1.0,
+          "a": 1.0
+        },
+        "emission": 5.0,
+        "blend": "Alpha",
+        "softness": 2.0
+      },
+      {
+        "name": "Light",
+        "type": "PointLight2D",
+        "color": {
+          "r": 0.015996292,
+          "g": 0.6514057,
+          "b": 0.8549927,
+          "a": 1.0
+        },
+        "energy": 0.8,
+        "radius": 90.0,
+        "falloff": 2.0,
+        "flicker": 0.0
+      }
+    ]
+  }
+}
