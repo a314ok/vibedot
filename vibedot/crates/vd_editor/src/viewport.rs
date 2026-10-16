@@ -230,7 +230,7 @@ pub fn show(ui: &mut egui::Ui, frame: &mut eframe::Frame, p: &mut OpenProject, v
     let fr = egui::Rect::from_min_max(xf.w2s(frame_rect.min), xf.w2s(frame_rect.max()));
     painter.rect_stroke(fr, 0, Stroke::new(1.5, theme::ACCENT.gamma_multiply(0.85)), egui::StrokeKind::Middle);
     painter.text(
-        fr.left_top() + egui::vec2(4.0, -14.0),
+        egui::pos2(fr.left().max(rect.left()) + 4.0, fr.top() - 14.0),
         egui::Align2::LEFT_CENTER,
         "game view",
         egui::FontId::proportional(11.0),
