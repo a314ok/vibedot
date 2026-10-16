@@ -113,7 +113,7 @@ impl eframe::App for PlayerApp {
                 ui.scope_builder(egui::UiBuilder::new().max_rect(rect.shrink(48.0)), |ui| {
                     ui.vertical_centered(|ui| {
                         ui.add_space(rect.height() * 0.25);
-                        ui.label(egui::RichText::new("◆ Vibedot").size(42.0).color(theme::ACCENT));
+                        ui.label(egui::RichText::new("♦ Vibedot").size(42.0).color(theme::ACCENT));
                         ui.add_space(12.0);
                         ui.label(egui::RichText::new(err).size(16.0).color(theme::TEXT));
                     });

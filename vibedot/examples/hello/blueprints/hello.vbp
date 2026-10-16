@@ -15,7 +15,7 @@
       "op": "math.wave",
       "pos": [
         0.0,
-        140.0
+        118.0
       ],
       "values": {
         "amplitude": {
@@ -30,7 +30,7 @@
       "id": 3,
       "op": "node.set_rotation",
       "pos": [
-        280.0,
+        306.2,
         0.0
       ]
     }

@@ -290,3 +290,160 @@ impl Blueprint {
         Ok(())
     }
 }
+
+/// Estimated node size in graph units (mirrors the editor's layout).
+pub fn estimated_size(def: &crate::defs::NodeDef) -> Vec2 {
+    estimated_size_titled(def, def.title.len())
+}
+
+/// Like [`estimated_size`] for a node whose title shows a literal.
+pub fn estimated_node_size(node: &BpNode) -> Vec2 {
+    let Some(def) = node.def() else { return Vec2::new(220.0, 100.0) };
+    let extra = def.title_pin.map_or(0, |p| node.literal(p).to_string().len() + 5);
+    estimated_size_titled(def, def.title.len() + extra)
+}
+
+fn estimated_size_titled(def: &crate::defs::NodeDef, title_len: usize) -> Vec2 {
+    let rows = def.inputs.len().max(def.outputs.len()).max(1) as f32;
+    let title = title_len as f32 * 8.0 + 44.0;
+    let ins = def.inputs.iter().map(|p| p.name.len() + if p.is_exec() { 0 } else { 8 }).max().unwrap_or(0);
+    let outs = def.outputs.iter().map(|p| p.name.len()).max().unwrap_or(0);
+    let w = title.max((ins + outs) as f32 * 7.4 + 56.0).clamp(150.0, 340.0);
+    Vec2::new(w + 40.0, 30.0 + 16.0 + rows * 24.0)
+}
+
+impl Blueprint {
+    /// Arranges nodes in columns following data and execution flow
+    /// ("Tidy up"). Each connected component is laid out separately and the
+    /// components are stacked vertically, ordered by their topmost node.
+    pub fn auto_layout(&mut self) {
+        use std::collections::{BTreeMap, HashMap, HashSet};
+        let ids: Vec<BpNodeId> = self.nodes.iter().map(|n| n.id).collect();
+        let index: HashMap<BpNodeId, usize> = ids.iter().enumerate().map(|(i, id)| (*id, i)).collect();
+        let n = ids.len();
+        // Undirected adjacency for components, directed edges for layering.
+        let mut preds: Vec<Vec<usize>> = vec![Vec::new(); n];
+        let mut adj: Vec<Vec<usize>> = vec![Vec::new(); n];
+        for l in &self.links {
+            let (Some(&a), Some(&b)) = (index.get(&l.from.node), index.get(&l.to.node)) else { continue };
+            preds[b].push(a);
+            adj[a].push(b);
+            adj[b].push(a);
+        }
+        // Longest-path layering (bounded iterations guard against cycles).
+        let mut layer = vec![0usize; n];
+        for _ in 0..n.max(1) {
+            let mut changed = false;
+            for b in 0..n {
+                for &a in &preds[b] {
+                    if layer[b] < layer[a] + 1 && layer[a] + 1 < n + 1 {
+                        layer[b] = layer[a] + 1;
+                        changed = true;
+                    }
+                }
+            }
+            if !changed {
+                break;
+            }
+        }
+        // Pull pure nodes right next to their consumer.
+        for i in 0..n {
+            let is_pure = self.nodes[i].def().is_some_and(|d| d.is_pure());
+            if is_pure {
+                let consumers: Vec<usize> = (0..n).filter(|&c| preds[c].contains(&i)).collect();
+                if let Some(min) = consumers.iter().map(|&c| layer[c]).min()
+                    && min > 0
+                {
+                    layer[i] = layer[i].max(min - 1);
+                }
+            }
+        }
+        // Components in order of their original top position.
+        let mut seen = HashSet::new();
+        let mut comps: Vec<Vec<usize>> = Vec::new();
+        for start in 0..n {
+            if !seen.insert(start) {
+                continue;
+            }
+            let mut comp = vec![start];
+            let mut stack = vec![start];
+            while let Some(x) = stack.pop() {
+                for &y in &adj[x] {
+                    if seen.insert(y) {
+                        comp.push(y);
+                        stack.push(y);
+                    }
+                }
+            }
+            comps.push(comp);
+        }
+        comps.sort_by(|a, b| {
+            let ya = a.iter().map(|&i| self.nodes[i].pos.y).fold(f32::MAX, f32::min);
+            let yb = b.iter().map(|&i| self.nodes[i].pos.y).fold(f32::MAX, f32::min);
+            ya.total_cmp(&yb)
+        });
+        let sizes: Vec<Vec2> = self.nodes.iter().map(estimated_node_size).collect();
+        // Remember which nodes each comment framed, to re-fit it afterwards.
+        let framed: Vec<Vec<usize>> = self
+            .comments
+            .iter()
+            .map(|c| {
+                (0..n)
+                    .filter(|&i| {
+                        let p = self.nodes[i].pos;
+                        p.x >= c.pos.x && p.y >= c.pos.y && p.x <= c.pos.x + c.size.x && p.y <= c.pos.y + c.size.y
+                    })
+                    .collect()
+            })
+            .collect();
+        let mut y0 = 0.0;
+        for comp in comps {
+            let min_layer = comp.iter().map(|&i| layer[i]).min().unwrap_or(0);
+            let mut columns: BTreeMap<usize, Vec<usize>> = BTreeMap::new();
+            for &i in &comp {
+                columns.entry(layer[i] - min_layer).or_default().push(i);
+            }
+            // Column x positions from the widest node of previous columns.
+            let mut x = 0.0;
+            let mut col_x = BTreeMap::new();
+            for (&c, members) in &columns {
+                col_x.insert(c, x);
+                x += members.iter().map(|&i| sizes[i].x).fold(0.0, f32::max) + 40.0;
+            }
+            let mut placed: HashMap<usize, f32> = HashMap::new();
+            let mut comp_height: f32 = 0.0;
+            for (&c, members) in &columns {
+                let mut members = members.clone();
+                // Barycenter ordering: follow predecessors' vertical order.
+                members.sort_by(|&a, &b| {
+                    let key = |i: usize| {
+                        let ys: Vec<f32> = preds[i].iter().filter_map(|p| placed.get(p)).copied().collect();
+                        if ys.is_empty() { self.nodes[i].pos.y } else { ys.iter().sum::<f32>() / ys.len() as f32 }
+                    };
+                    key(a).total_cmp(&key(b))
+                });
+                let mut y = 0.0;
+                for i in members {
+                    placed.insert(i, y);
+                    self.nodes[i].pos = Vec2::new(col_x[&c], y0 + y);
+                    y += sizes[i].y + 24.0;
+                }
+                comp_height = comp_height.max(y);
+            }
+            y0 += comp_height + 60.0;
+        }
+        // Re-fit comments around the nodes they framed.
+        let mut keep = Vec::new();
+        for (mut c, members) in std::mem::take(&mut self.comments).into_iter().zip(framed) {
+            if members.is_empty() {
+                continue;
+            }
+            let min = members.iter().map(|&i| self.nodes[i].pos).fold(Vec2::splat(f32::MAX), Vec2::min);
+            let max = members.iter().map(|&i| self.nodes[i].pos + sizes[i] - Vec2::new(40.0, 0.0)).fold(Vec2::splat(f32::MIN), Vec2::max);
+            c.pos = min - Vec2::new(24.0, 48.0);
+            c.size = max - min + Vec2::new(48.0, 72.0);
+            keep.push(c);
+        }
+        self.comments = keep;
+    }
+}

@@ -10,6 +10,8 @@ vd_core.workspace = true
 vd_engine.workspace = true
 vd_render.workspace = true
 eframe.workspace = true
+# Monochrome emoji fonts for the editor's icons.
+egui = { workspace = true, features = ["monochrome_emoji_fonts"] }
 log.workspace = true
 
 [lints]

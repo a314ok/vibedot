@@ -39,8 +39,9 @@ impl G {
     fn comment(&mut self, x: f32, y: f32, w: f32, h: f32, text: &str, color: Color) {
         self.bp.comments.push(vd_blueprint::graph::Comment { pos: vec2(x, y), size: vec2(w, h), text: text.into(), color });
     }
-    fn json(&self) -> Vec<u8> {
+    fn json(&mut self) -> Vec<u8> {
         vd_blueprint::compile(&self.bp).unwrap_or_else(|e| panic!("template blueprint does not compile: {e:?}"));
+        self.bp.auto_layout();
         self.bp.to_json().into_bytes()
     }
 }
@@ -410,7 +411,7 @@ fn main_bp() -> Vec<u8> {
     }
 
     // Game over: slow motion, flash, restart.
-    g.comment(-40.0, 1120.0, 1600.0, 260.0, "Game over → slow motion → restart", comment_color);
+    g.comment(-40.0, 1120.0, 1600.0, 260.0, "Game over -> slow motion -> restart", comment_color);
     let ev = g.n("event.custom", 0.0, 1180.0, &[("name", s("game_over"))]);
     let once = g.n("flow.do_once", 240.0, 1180.0, &[]);
     let over = g.n("node.get_node", 240.0, 1300.0, &[("path", s("%GameOver"))]);

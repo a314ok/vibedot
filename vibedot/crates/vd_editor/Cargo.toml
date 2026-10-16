@@ -1,7 +1,28 @@
 [package]
 name = "vd_editor"
+description = "Vibedot editor: scene editing, blueprint graphs, export"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
 
+[[bin]]
+name = "vibedot"
+path = "src/main.rs"
+
 [dependencies]
+vd_core.workspace = true
+vd_scene.workspace = true
+vd_blueprint.workspace = true
+vd_engine.workspace = true
+vd_render.workspace = true
+vd_egui.workspace = true
+eframe = { workspace = true, features = ["default_fonts", "wgpu", "wayland", "x11", "clipboard"] }
+egui_extras = { version = "0.37", default-features = false, features = ["image", "file"] }
+image.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+log.workspace = true
+
+[lints]
+workspace = true

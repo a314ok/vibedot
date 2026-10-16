@@ -78,9 +78,9 @@ impl NodeKind {
     pub fn info(&self) -> KindInfo {
         let (type_name, icon, category, description) = match self {
             NodeKind::Node(_) => ("Node", "○", "Core", "Base node without a transform"),
-            NodeKind::Node2D(_) => ("Node2D", "✥", "2D", "Groups 2D children under a transform"),
+            NodeKind::Node2D(_) => ("Node2D", "◎", "2D", "Groups 2D children under a transform"),
             NodeKind::Sprite2D(_) => ("Sprite2D", "🖼", "2D", "Textured quad with sprite-sheet animation"),
-            NodeKind::Shape2D(_) => ("Shape2D", "◆", "2D", "Anti-aliased vector shape (rect, circle, ring…)"),
+            NodeKind::Shape2D(_) => ("Shape2D", "♦", "2D", "Anti-aliased vector shape (rect, circle, ring…)"),
             NodeKind::Label(_) => ("Label", "🅰", "2D", "Text, in world or screen space"),
             NodeKind::Camera2D(_) => ("Camera2D", "🎥", "2D", "Viewpoint with zoom, smoothing and shake"),
             NodeKind::PointLight2D(_) => ("PointLight2D", "💡", "Rendering", "Additive HDR point light"),
@@ -89,7 +89,7 @@ impl NodeKind {
                 BodyType::Static => ("StaticBody2D", "▣", "Physics", "Immovable collider (walls, floors)"),
                 BodyType::Character => ("CharacterBody2D", "🏃", "Physics", "Velocity-driven body that slides"),
                 BodyType::Rigid => ("RigidBody2D", "⚽", "Physics", "Simulated body with gravity and bounce"),
-                BodyType::Area => ("Area2D", "◌", "Physics", "Detects overlaps, no collision response"),
+                BodyType::Area => ("Area2D", "○", "Physics", "Detects overlaps, no collision response"),
             },
             NodeKind::Timer(_) => ("Timer", "⏱", "Core", "Fires `On Timeout` periodically"),
             NodeKind::WorldEnvironment(_) => {
