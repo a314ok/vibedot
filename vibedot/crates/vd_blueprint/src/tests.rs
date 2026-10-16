@@ -16,8 +16,8 @@ fn link(bp: &mut Blueprint, a: crate::BpNodeId, ap: &str, b: crate::BpNodeId, bp
 
 fn setup(bp: &Blueprint) -> (SceneTree, Instance, NullHost) {
     let program = Arc::new(compile(bp).unwrap_or_else(|e| panic!("compile errors: {e:?}")));
-    let mut tree = SceneTree::new("Root");
-    let id = tree.add_child(tree.root(), Node::new("Hero", NodeKind::Node2D(Node2D::default()))).unwrap();
+    let mut tree = SceneTree::new();
+    let id = tree.add_new_child(tree.root(), Node::new("Hero", NodeKind::Node2D(Node2D::default()))).unwrap();
     let inst = Instance::new(program, id, |_| None);
     (tree, inst, NullHost::default())
 }
@@ -90,7 +90,7 @@ fn moves_self_and_formats_text() {
     link(&mut bp, fmt, "result", st, "text");
     let (mut tree, mut inst, mut host) = setup(&bp);
     let hero = inst.node;
-    let label = tree.add_child(hero, Node::new("Score", NodeKind::Label(Label::default()))).unwrap();
+    let label = tree.add_new_child(hero, Node::new("Score", NodeKind::Label(Label::default()))).unwrap();
     for _ in 0..10 {
         inst.trigger(EventKind::Process, StringName::EMPTY, &[Variant::Number(0.1)], &mut tree, &mut host).unwrap();
     }
@@ -159,7 +159,7 @@ fn foreach_over_group_destroys_enemies() {
     let (mut tree, mut inst, mut host) = setup(&bp);
     for i in 0..5 {
         let n = Node::new(format!("E{i}"), NodeKind::Node2D(Node2D::default())).with_group("enemies");
-        tree.add_child(tree.root(), n).unwrap();
+        tree.add_new_child(tree.root(), n).unwrap();
     }
     assert_eq!(tree.len(), 7);
     fire(&mut inst, &mut tree, &mut host, EventKind::Ready);

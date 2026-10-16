@@ -24,7 +24,9 @@ pub enum Op {
     Concat, Format, ToText, MakeColor, Hsv, ArrayLen, ArrayGet, ArrayRandom,
     // node queries
     SelfNode, GetNode, GetParent, FirstInGroup, NodesInGroup, IsValid, IsInGroup, GetName, GetPosition,
-    GetRotation, GetScale, NodeDistance, GetProperty,
+    GetRotation, GetScale, NodeDistance, GetProperty, GetChild, ChildCount, FindChild, Reparent,
+    // signals
+    ConnectSignal, DisconnectSignal, EmitSignal, IsConnected,
     // node commands
     SetPosition, Translate, SetRotation, Rotate, LookAt, SetScale, SetVisible, SetProperty, SetText, SetColor,
     AddToGroup, QueueFree, Spawn,
@@ -34,7 +36,7 @@ pub enum Op {
     ActionPressed, ActionJustPressed, Axis, InputVector, MousePosition,
     // game
     Print, EmitEvent, ChangeScene, ReloadScene, CameraShake, HitStop, TimeScale, SetEnv, Flash, Burst, TimerStart,
-    TimerStop, Quit,
+    TimerStop, Quit, SetPaused, IsPaused,
 }
 
 #[inline]
@@ -291,6 +293,58 @@ pub(crate) fn call(op: Op, a: &[Variant], outs: &mut [Variant], cx: &mut ExecCtx
             let v = cx.node_arg(&a[0]).and_then(|id| cx.tree.get(id)).and_then(|n| n.get(&name)).unwrap_or_default();
             out0(outs, v);
         }
+        GetChild => {
+            let c = cx.node_arg(&a[0]).and_then(|id| {
+                let len = cx.tree.get_child_count(id) as i32;
+                let i = a[1].to_number() as i32;
+                let i = if i < 0 { i + len } else { i };
+                (0..len).contains(&i).then(|| cx.tree.get_children(id)[i as usize])
+            });
+            out0(outs, ExecCtx::obj(c));
+        }
+        ChildCount => {
+            let n = cx.node_arg(&a[0]).map_or(0, |id| cx.tree.get_child_count(id));
+            out0(outs, Variant::Number(n as f64));
+        }
+        FindChild => {
+            let c = cx.node_arg(&a[0]).and_then(|id| cx.tree.find_child(id, &a[1].to_string(), a[2].to_bool()));
+            out0(outs, ExecCtx::obj(c));
+        }
+        Reparent => {
+            if let (Some(n), Some(p)) = (cx.node_arg(&a[0]), cx.node_arg(&a[1]))
+                && let Err(e) = cx.tree.reparent(n, p, true)
+            {
+                cx.host.print(&format!("Reparent failed: {e}"));
+            }
+        }
+
+        ConnectSignal => {
+            if let (Some(src), Some(dst)) = (cx.node_arg(&a[0]), cx.node_arg(&a[2])) {
+                let flags = if a[4].to_bool() { vd_scene::connect_flags::ONE_SHOT } else { 0 };
+                // Connecting twice is a no-op for designers (Godot would error).
+                if !cx.tree.is_connected(src, &a[1].to_string(), dst, &a[3].to_string()) {
+                    let _ = cx.tree.connect(src, &a[1].to_string(), dst, &a[3].to_string(), flags);
+                }
+            }
+        }
+        DisconnectSignal => {
+            if let (Some(src), Some(dst)) = (cx.node_arg(&a[0]), cx.node_arg(&a[2])) {
+                let _ = cx.tree.disconnect(src, &a[1].to_string(), dst, &a[3].to_string());
+            }
+        }
+        EmitSignal => {
+            if let Some(src) = cx.node_arg(&a[0]) {
+                let args: Vec<Variant> = a[2..].iter().filter(|v| !v.is_nil()).cloned().collect();
+                cx.tree.emit_signal(src, &a[1].to_string(), &args);
+            }
+        }
+        IsConnected => {
+            let r = match (cx.node_arg(&a[0]), cx.node_arg(&a[2])) {
+                (Some(src), Some(dst)) => cx.tree.is_connected(src, &a[1].to_string(), dst, &a[3].to_string()),
+                _ => false,
+            };
+            out0(outs, Variant::Bool(r));
+        }
 
         SetPosition => {
             if let Some(id) = cx.node_arg(&a[0]) {
@@ -438,5 +492,7 @@ pub(crate) fn call(op: Op, a: &[Variant], outs: &mut [Variant], cx: &mut ExecCtx
             }
         }),
         Quit => cx.host.quit(),
+        SetPaused => cx.tree.set_pause(a[0].to_bool()),
+        IsPaused => out0(outs, Variant::Bool(cx.tree.is_paused())),
     }
 }

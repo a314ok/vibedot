@@ -222,8 +222,8 @@ pub static LIBRARY: &[NodeDef] = &[
         Event(E::BodyExited), in [], out [THEN, out("other", T::Object)]),
     def!("event.timeout", "On Timer Timeout", "Events", "A Timer fired. `timer` = name of a child Timer (empty: this node or any child).",
         Event(E::Timeout), in [cfg("timer", "")], out [THEN, out("timer", T::Object)], title_pin = "timer"),
-    def!("event.custom", "On Event", "Events", "Receives a custom event sent with `Emit Event`.",
-        Event(E::Custom), in [cfg("name", "my_event")], out [THEN, out("payload", T::Any), out("sender", T::Object)], title_pin = "name"),
+    def!("event.custom", "On Event / Method", "Events", "Runs when a custom event (`Emit Event`) or a connected signal calls this method name.",
+        Event(E::Custom), in [cfg("name", "my_event")], out [THEN, out("payload", T::Any), out("sender", T::Object), out("args", T::Array)], title_pin = "name"),
 
     // ------------------------------------------------------------------ flow
     def!("flow.branch", "Branch", "Flow", "If / else.",
@@ -368,6 +368,24 @@ pub static LIBRARY: &[NodeDef] = &[
     def!("node.spawn", "Spawn Scene", "Node", "Instantiates a scene file at a position.", Exec(Op::Spawn),
         in [EXEC_IN, string("scene", "scenes/bullet.vscn"), v2("position", 0.0, 0.0), node_nil("parent")], out [THEN, out("node", T::Object)]),
 
+    def!("node.get_child", "Get Child", "Node", "Child at index (negative counts from the end).", Pure(Op::GetChild),
+        in [node("node"), num("index", 0.0)], out [out("child", T::Object)]),
+    def!("node.child_count", "Get Child Count", "Node", "Number of children.", Pure(Op::ChildCount), in [node("node")], out [out("count", T::Number)]),
+    def!("node.find_child", "Find Child", "Node", "First descendant whose name matches a pattern (* and ? wildcards).", Pure(Op::FindChild),
+        in [node("node"), string("pattern", "Enemy*"), boolean("recursive", true)], out [out("child", T::Object)]),
+    def!("node.reparent", "Reparent", "Node", "Moves a node under a new parent, keeping its global transform.", Exec(Op::Reparent),
+        in [EXEC_IN, node("node"), node_nil("new_parent")], out [THEN]),
+
+    // ------------------------------------------------------------------ signals
+    def!("signal.connect", "Connect Signal", "Signals", "Connects `source`'s signal to a method (an `On Event / Method` handler) on `target`.", Exec(Op::ConnectSignal),
+        in [EXEC_IN, node("source"), string("signal", "timeout"), node("target"), string("method", "_on_timeout"), boolean("one_shot", false)], out [THEN]),
+    def!("signal.disconnect", "Disconnect Signal", "Signals", "Removes a signal connection.", Exec(Op::DisconnectSignal),
+        in [EXEC_IN, node("source"), string("signal", "timeout"), node("target"), string("method", "_on_timeout")], out [THEN]),
+    def!("signal.emit", "Emit Signal", "Signals", "Emits a signal from a node with up to two arguments.", Exec(Op::EmitSignal),
+        in [EXEC_IN, node("node"), string("signal", "hit"), any("arg0"), any("arg1")], out [THEN]),
+    def!("signal.is_connected", "Is Connected", "Signals", "True if the connection exists.", Pure(Op::IsConnected),
+        in [node("source"), string("signal", "timeout"), node("target"), string("method", "_on_timeout")], out [out("connected", T::Bool)]),
+
     // ------------------------------------------------------------------ physics
     def!("physics.set_velocity", "Set Velocity", "Physics", "Sets a body's velocity (pixels / second).", Exec(Op::SetVelocity), in [EXEC_IN, node("node"), v2("velocity", 0.0, 0.0)], out [THEN]),
     def!("physics.get_velocity", "Get Velocity", "Physics", "A body's velocity.", Pure(Op::GetVelocity), in [node("node")], out [out("velocity", T::Vec2)]),
@@ -398,6 +416,9 @@ pub static LIBRARY: &[NodeDef] = &[
     def!("fx.burst", "Particles Burst", "Rendering", "Emits a burst from a Particles2D node.", Exec(Op::Burst), in [EXEC_IN, node("node"), num("count", 32.0)], out [THEN]),
     def!("timer.start", "Start Timer", "Game", "Starts (or restarts) a Timer node.", Exec(Op::TimerStart), in [EXEC_IN, node("timer"), num("wait_time", 0.0)], out [THEN]),
     def!("timer.stop", "Stop Timer", "Game", "Stops a Timer node.", Exec(Op::TimerStop), in [EXEC_IN, node("timer")], out [THEN]),
+    def!("game.pause", "Set Paused", "Game", "Pauses the SceneTree (nodes with process_mode Always / WhenPaused keep running).", Exec(Op::SetPaused),
+        in [EXEC_IN, boolean("paused", true)], out [THEN]),
+    def!("game.is_paused", "Is Paused", "Game", "True while the SceneTree is paused.", Pure(Op::IsPaused), in [], out [out("paused", T::Bool)]),
     def!("game.quit", "Quit Game", "Game", "Closes the game.", Exec(Op::Quit), in [EXEC_IN], out [THEN]),
 ];
 

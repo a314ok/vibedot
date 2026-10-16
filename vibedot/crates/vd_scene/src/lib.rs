@@ -12,7 +12,10 @@ pub mod reflect;
 pub mod tree;
 
 pub use kinds::*;
-pub use node::{KindInfo, Node, NodeId, NodeKind};
-pub use packed::{NodeData, SceneFile, SceneIoError};
+pub use node::{KindInfo, Node, NodeId, NodeKind, ProcessFlags, ProcessMode};
+pub use packed::{ConnectionData, NodeData, SceneFile, SceneIoError};
 pub use reflect::{PropHint, PropValue, PropertyInfo, Reflect};
-pub use tree::{SceneTree, TreeError};
+pub use tree::{Connection, NODE_SIGNALS, Notification, SceneTree, TreeError, TreeEvent, connect_flags};
+
+#[cfg(test)]
+mod tests_node;

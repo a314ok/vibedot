@@ -6,7 +6,7 @@ use std::path::Path;
 use serde::{Deserialize, Serialize};
 use vd_core::{Color, StringName, Transform2D, Variant};
 
-use crate::node::{Node, NodeKind};
+use crate::node::{Node, NodeKind, ProcessMode};
 use crate::tree::SceneTree;
 
 pub const SCENE_FORMAT_VERSION: u32 = 1;
@@ -47,8 +47,33 @@ pub struct NodeData {
     pub script: Option<String>,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub vars: Vec<(String, Variant)>,
+    #[serde(default, skip_serializing_if = "is_default")]
+    pub process_mode: ProcessMode,
+    #[serde(default, skip_serializing_if = "is_default")]
+    pub process_priority: i32,
+    #[serde(default, skip_serializing_if = "is_default")]
+    pub physics_process_priority: i32,
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub unique_name_in_owner: bool,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub children: Vec<NodeData>,
+    /// Signal connections between nodes of this packed subtree (paths are
+    /// relative to this node), like `[connection ...]` entries in `.tscn`.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub connections: Vec<ConnectionData>,
+}
+
+/// A persisted signal connection.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct ConnectionData {
+    pub from: String,
+    pub signal: String,
+    pub to: String,
+    pub method: String,
+    #[serde(default, skip_serializing_if = "is_default")]
+    pub flags: u32,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub binds: Vec<Variant>,
 }
 
 fn white() -> Color {
@@ -67,7 +92,12 @@ impl NodeData {
             groups: n.groups.clone(),
             script: n.script.clone(),
             vars: n.vars.clone(),
+            process_mode: n.process_mode,
+            process_priority: n.process_priority,
+            physics_process_priority: n.physics_process_priority,
+            unique_name_in_owner: n.unique_name_in_owner,
             children: Vec::new(),
+            connections: Vec::new(),
         }
     }
 
@@ -80,6 +110,10 @@ impl NodeData {
         n.groups.clone_from(&self.groups);
         n.script.clone_from(&self.script);
         n.vars.clone_from(&self.vars);
+        n.process_mode = self.process_mode;
+        n.process_priority = self.process_priority;
+        n.physics_process_priority = self.physics_process_priority;
+        n.unique_name_in_owner = self.unique_name_in_owner;
         n
     }
 }
@@ -103,7 +137,7 @@ pub enum SceneIoError {
 
 impl SceneFile {
     pub fn from_tree(tree: &SceneTree) -> Self {
-        Self { format: SCENE_FORMAT_VERSION, root: tree.pack(tree.root()).expect("root always exists") }
+        Self { format: SCENE_FORMAT_VERSION, root: tree.pack(tree.scene_root()).expect("scene root exists") }
     }
 
     pub fn to_tree(&self) -> SceneTree {

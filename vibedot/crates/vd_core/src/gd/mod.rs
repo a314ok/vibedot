@@ -10,6 +10,7 @@ pub mod color;
 pub mod color_names;
 pub mod math_funcs;
 pub mod rect2;
+pub mod string;
 pub mod transform2d;
 pub mod vector2;
 

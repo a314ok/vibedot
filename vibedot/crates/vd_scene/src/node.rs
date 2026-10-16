@@ -4,7 +4,22 @@ use serde::{Deserialize, Serialize};
 use vd_core::{Affine2, Color, Handle, StringName, Transform2D, VType, Variant};
 
 use crate::kinds::*;
+use crate::prop_enum;
 use crate::reflect::{PropHint, PropValue, PropertyInfo, Reflect};
+
+prop_enum! {
+    /// Godot's `Node.ProcessMode`: how a node reacts to `SceneTree.paused`.
+    pub enum ProcessMode { Inherit, Pausable, WhenPaused, Always, Disabled } default Inherit
+}
+
+/// Per-node processing switches (`set_process`, `set_physics_process`, ...).
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub struct ProcessFlags {
+    pub process: bool,
+    pub physics_process: bool,
+    pub process_internal: bool,
+    pub physics_process_internal: bool,
+}
 
 pub type NodeId = Handle<Node>;
 
@@ -141,9 +156,20 @@ pub struct Node {
     pub script: Option<String>,
     /// Designer-defined variables (inspector "Custom" section).
     pub vars: Vec<(String, Variant)>,
+    /// How this node behaves while the tree is paused.
+    pub process_mode: ProcessMode,
+    /// Lower values process first (Godot `process_priority`).
+    pub process_priority: i32,
+    pub physics_process_priority: i32,
+    /// Accessible as `%Name` from anywhere in its scene.
+    pub unique_name_in_owner: bool,
+    pub processing: ProcessFlags,
 
     pub(crate) parent: Option<NodeId>,
     pub(crate) children: Vec<NodeId>,
+    pub(crate) inside_tree: bool,
+    /// `NOTIFICATION_READY` only fires the first time (until `request_ready`).
+    pub(crate) ready_first: bool,
     /// World transform, refreshed by `SceneTree::update_transforms`.
     pub(crate) global: Affine2,
     pub(crate) global_modulate: Color,
@@ -151,6 +177,12 @@ pub struct Node {
     pub(crate) queued_free: bool,
     pub(crate) ready: bool,
 }
+
+const COMMON_NODE: &[PropertyInfo] = &[
+    PropertyInfo { name: "process_mode", ty: VType::String, hint: PropHint::Enum(ProcessMode::NAMES), group: "Process" },
+    PropertyInfo { name: "process_priority", ty: VType::Number, hint: PropHint::Range { min: -100.0, max: 100.0, step: 1.0 }, group: "Process" },
+    PropertyInfo { name: "unique_name_in_owner", ty: VType::Bool, hint: PropHint::None, group: "Node" },
+];
 
 const COMMON_2D: &[PropertyInfo] = &[
     PropertyInfo { name: "position", ty: VType::Vec2, hint: PropHint::None, group: "Transform" },
@@ -173,8 +205,15 @@ impl Node {
             groups: Vec::new(),
             script: None,
             vars: Vec::new(),
+            process_mode: ProcessMode::Inherit,
+            process_priority: 0,
+            physics_process_priority: 0,
+            unique_name_in_owner: false,
+            processing: ProcessFlags::default(),
             parent: None,
             children: Vec::new(),
+            inside_tree: false,
+            ready_first: true,
             global: Affine2::IDENTITY,
             global_modulate: Color::WHITE,
             global_visible: true,
@@ -227,8 +266,64 @@ impl Node {
         self.queued_free
     }
 
+    /// `is_node_ready()`: ready has been notified since entering the tree.
     pub fn is_ready(&self) -> bool {
         self.ready
+    }
+
+    pub fn is_inside_tree(&self) -> bool {
+        self.inside_tree
+    }
+
+    /// Godot class name of this node (`get_class()`).
+    pub fn get_class(&self) -> &'static str {
+        self.kind.type_name()
+    }
+
+    /// Asks for `ready` to be notified again next time the node enters the tree.
+    pub fn request_ready(&mut self) {
+        self.ready_first = true;
+    }
+
+    pub fn set_process(&mut self, enable: bool) {
+        self.processing.process = enable;
+    }
+    pub fn is_processing(&self) -> bool {
+        self.processing.process
+    }
+    pub fn set_physics_process(&mut self, enable: bool) {
+        self.processing.physics_process = enable;
+    }
+    pub fn is_physics_processing(&self) -> bool {
+        self.processing.physics_process
+    }
+    pub fn set_process_internal(&mut self, enable: bool) {
+        self.processing.process_internal = enable;
+    }
+    pub fn set_physics_process_internal(&mut self, enable: bool) {
+        self.processing.physics_process_internal = enable;
+    }
+    pub fn set_process_priority(&mut self, p: i32) {
+        self.process_priority = p;
+    }
+    pub fn set_physics_process_priority(&mut self, p: i32) {
+        self.physics_process_priority = p;
+    }
+
+    pub fn add_to_group(&mut self, group: &str) {
+        let g = StringName::new(group);
+        if !self.groups.contains(&g) {
+            self.groups.push(g);
+        }
+    }
+
+    pub fn remove_from_group(&mut self, group: &str) {
+        let g = StringName::new(group);
+        self.groups.retain(|x| *x != g);
+    }
+
+    pub fn is_in_group(&self, group: &str) -> bool {
+        self.in_group(StringName::new(group))
     }
 
     pub fn in_group(&self, g: StringName) -> bool {
@@ -246,6 +341,7 @@ impl Node {
             out.extend_from_slice(COMMON_2D);
         }
         self.kind.reflect().properties(&mut out);
+        out.extend_from_slice(COMMON_NODE);
         out
     }
 
@@ -260,6 +356,9 @@ impl Node {
             "z_index" => Some(self.z_index.to_variant()),
             "visible" => Some(self.visible.to_variant()),
             "modulate" => Some(self.modulate.to_variant()),
+            "process_mode" => Some(self.process_mode.to_variant()),
+            "process_priority" => Some(self.process_priority.to_variant()),
+            "unique_name_in_owner" => Some(self.unique_name_in_owner.to_variant()),
             _ => self.kind.reflect().get_prop(name).or_else(|| self.var(name).cloned()),
         }
     }
@@ -276,6 +375,9 @@ impl Node {
             "z_index" => self.z_index = i32::from_variant(value),
             "visible" => self.visible = value.to_bool(),
             "modulate" => self.modulate = value.to_color(),
+            "process_mode" => self.process_mode = ProcessMode::from_variant(value),
+            "process_priority" => self.process_priority = i32::from_variant(value),
+            "unique_name_in_owner" => self.unique_name_in_owner = value.to_bool(),
             _ => {
                 if !self.kind.reflect_mut().set_prop(name, value) {
                     if let Some(slot) = self.vars.iter_mut().find(|(n, _)| n == name) {
