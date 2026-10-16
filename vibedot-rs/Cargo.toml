@@ -1,0 +1,70 @@
+[workspace]
+resolver = "3"
+members = [
+    "crates/vd_core",
+    "crates/vd_scene",
+    "crates/vd_blueprint",
+    "crates/vd_physics",
+    "crates/vd_render",
+    "crates/vd_engine",
+    "crates/vd_editor",
+    "crates/vd_player",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+license = "MIT"
+rust-version = "1.85"
+authors = ["Vibedot contributors"]
+repository = "https://github.com/a314ok/vibedot"
+
+[workspace.dependencies]
+vd_core = { path = "crates/vd_core" }
+vd_scene = { path = "crates/vd_scene" }
+vd_blueprint = { path = "crates/vd_blueprint" }
+vd_physics = { path = "crates/vd_physics" }
+vd_render = { path = "crates/vd_render" }
+vd_engine = { path = "crates/vd_engine" }
+
+glam = { version = "0.34", features = ["serde", "bytemuck"] }
+serde = { version = "1", features = ["derive", "rc"] }
+serde_json = "1"
+thiserror = "2"
+bytemuck = { version = "1", features = ["derive"] }
+log = "0.4"
+image = { version = "0.25", default-features = false, features = ["png"] }
+ab_glyph = "0.2"
+epaint_default_fonts = "0.37"
+pollster = "1"
+eframe = { version = "0.37", default-features = false, features = ["default_fonts", "wgpu", "wayland", "x11", "clipboard"] }
+egui = "0.37"
+egui-wgpu = "0.37"
+
+[workspace.lints.rust]
+unsafe_op_in_unsafe_fn = "deny"
+missing_debug_implementations = "allow"
+rust_2018_idioms = { level = "warn", priority = -1 }
+
+[workspace.lints.clippy]
+all = { level = "warn", priority = -1 }
+needless_pass_by_value = "warn"
+large_enum_variant = "allow"
+too_many_arguments = "allow"
+type_complexity = "allow"
+
+[profile.dev]
+opt-level = 1
+
+[profile.dev.package."*"]
+opt-level = 3
+
+[profile.release]
+lto = "thin"
+codegen-units = 1
+panic = "abort"
+strip = "symbols"
+
+[profile.dist]
+inherits = "release"
+lto = "fat"

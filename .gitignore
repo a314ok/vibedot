@@ -396,3 +396,7 @@ $RECYCLE.BIN/
 *.msp
 *.lnk
 *.generated.props
+
+# Vibedot (Rust)
+vibedot-rs/target/
+vibedot-rs/dist/
