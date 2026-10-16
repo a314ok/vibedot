@@ -156,6 +156,8 @@ pub struct Renderer {
     // Scratch buffers reused every frame (no per-frame allocation).
     instances: Vec<Instance>,
     batches: Vec<Batch>,
+    /// Batches below this index are closed (world/HUD boundary).
+    batch_floor: usize,
     order: Vec<usize>,
 }
 
@@ -449,6 +451,7 @@ impl Renderer {
             stats: RenderStats::default(),
             instances: Vec::new(),
             batches: Vec::new(),
+            batch_floor: 0,
             order: Vec::new(),
         };
         r.insert_rgba(TexKey::White, &[255, 255, 255, 255], 1, 1, false);
@@ -725,13 +728,11 @@ impl Renderer {
     }
 
     /// Converts draw commands into GPU instances and batches.
-    fn build_instances(&mut self, cmds: &[DrawCmd], hud: bool) {
+    fn build_instances(&mut self, cmds: &[DrawCmd]) {
         self.order.clear();
         self.order.extend(0..cmds.len());
         // Stable sort by z keeps submission order inside a layer.
         self.order.sort_by_key(|&i| cmds[i].z);
-        let base = self.instances.len();
-        let _ = base;
         for oi in 0..self.order.len() {
             let cmd = &cmds[self.order[oi]];
             match &cmd.prim {
@@ -778,13 +779,14 @@ impl Renderer {
                 }
             }
         }
-        let _ = hud;
     }
 
     fn push_instance(&mut self, tex: TexKey, blend: Blend, inst: Instance) {
         let idx = self.instances.len() as u32;
         self.instances.push(inst);
-        if let Some(last) = self.batches.last_mut() {
+        if self.batches.len() > self.batch_floor
+            && let Some(last) = self.batches.last_mut()
+        {
             if last.tex == tex && last.blend == blend && last.start + last.count == idx {
                 last.count += 1;
                 return;
@@ -839,9 +841,11 @@ impl Renderer {
         // ---- CPU: instances, batches, lights, uniforms
         self.instances.clear();
         self.batches.clear();
-        self.build_instances(&list.world, false);
+        self.batch_floor = 0;
+        self.build_instances(&list.world);
         let world_batches = self.batches.len();
-        self.build_instances(&list.screen, true);
+        self.batch_floor = world_batches;
+        self.build_instances(&list.screen);
         if self.atlas.dirty {
             self.queue.write_texture(
                 wgpu::TexelCopyTextureInfo {
@@ -872,13 +876,11 @@ impl Renderer {
 
         let t = self.targets.as_ref().expect("targets created above");
         let internal = t.internal;
-        let internal_v = vec2(internal.0 as f32, internal.1 as f32);
         let out_v = vec2(size.0 as f32, size.1 as f32);
         // World camera: computed against the *output* size so pixelation
         // only lowers resolution, never changes framing.
         let world_to_screen = list.view.world_to_screen(out_v);
         let view = screen_to_clip(out_v) * world_to_screen;
-        let _ = internal_v;
         let bold = 0.06;
         let globals = Globals { view: affine_to_mat4(&view).to_cols_array_2d(), params: [list.time, bold, 0.0, 0.0] };
         self.queue.write_buffer(&self.world_globals.0, 0, bytemuck::bytes_of(&globals));

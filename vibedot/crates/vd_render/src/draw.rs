@@ -181,7 +181,7 @@ impl View2D {
 }
 
 /// Everything needed to render one frame.
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug)]
 pub struct DrawList {
     pub view: View2D,
     pub world: Vec<DrawCmd>,
@@ -193,6 +193,20 @@ pub struct DrawList {
     pub flash: Color,
     /// Seconds, drives grain/flicker animation.
     pub time: f32,
+}
+
+impl Default for DrawList {
+    fn default() -> Self {
+        Self {
+            view: View2D::default(),
+            world: Vec::new(),
+            screen: Vec::new(),
+            lights: Vec::new(),
+            env: EnvSettings::default(),
+            flash: Color::TRANSPARENT,
+            time: 0.0,
+        }
+    }
 }
 
 impl DrawList {
