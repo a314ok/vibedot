@@ -16,7 +16,7 @@ pub mod variant;
 
 pub use arena::{Arena, Handle};
 pub use color::Color;
-pub use math::{Affine2, Rect2, Transform2D, Vec2, Vec3, Vec4, vec2, vec3, vec4};
+pub use math::{Affine2, Mat2, Mat3, Mat4, Rect2, Transform2D, Vec2, Vec3, Vec4, vec2, vec3, vec4};
 pub use rng::Rng;
 pub use string_name::StringName;
 pub use variant::{ObjectId, VType, Variant};

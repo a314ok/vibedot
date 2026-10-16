@@ -1,7 +1,12 @@
 [package]
 name = "vd_physics"
+description = "Vibedot 2D physics: SAP broadphase, contact resolution, events"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
 
 [dependencies]
+vd_core.workspace = true
+
+[lints]
+workspace = true

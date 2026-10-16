@@ -1,7 +1,19 @@
 [package]
 name = "vd_render"
+description = "Vibedot rendering server: wgpu HDR canvas, 2D lights, bloom, post FX, SDF text"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
 
 [dependencies]
+vd_core.workspace = true
+bytemuck.workspace = true
+log.workspace = true
+image.workspace = true
+ab_glyph.workspace = true
+epaint_default_fonts.workspace = true
+pollster.workspace = true
+wgpu = "30"
+
+[lints]
+workspace = true
