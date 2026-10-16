@@ -28,10 +28,13 @@ pub fn hdr_color_edit(ui: &mut egui::Ui, c: &mut Color, hdr: bool) -> bool {
             changed = true;
         }
         let mut k = intensity;
-        if hdr {
-            if ui.add(egui::DragValue::new(&mut k).speed(0.02).range(1.0..=32.0).prefix("×")).on_hover_text("HDR intensity (glow)").changed() {
-                changed = true;
-            }
+        if hdr
+            && ui
+                .add(egui::DragValue::new(&mut k).speed(0.02).range(1.0..=32.0).prefix("×"))
+                .on_hover_text("HDR intensity (glow)")
+                .changed()
+        {
+            changed = true;
         }
         ui.label(RichText::new(base.to_hex()).small().monospace().color(theme::TEXT_DIM));
         if changed {
@@ -174,7 +177,11 @@ pub fn show(ui: &mut egui::Ui, p: &mut OpenProject, shared: &mut Shared) {
         ui.vertical_centered(|ui| {
             ui.label(RichText::new("Select a node to edit its properties").color(theme::TEXT_DIM));
             ui.add_space(8.0);
-            ui.label(RichText::new("Tip: drag nodes in the Scene dock to reparent them,\nright-click for more actions.").small().color(theme::TEXT_DIM));
+            ui.label(
+                RichText::new("Tip: drag nodes in the Scene dock to reparent them,\nright-click for more actions.")
+                    .small()
+                    .color(theme::TEXT_DIM),
+            );
         });
         return;
     };
@@ -191,7 +198,9 @@ pub fn show(ui: &mut egui::Ui, p: &mut OpenProject, shared: &mut Shared) {
 }
 
 fn header(ui: &mut egui::Ui, p: &mut OpenProject, id: NodeId) {
-    let Some(node) = p.scene.tree.get(id) else { return };
+    let Some(node) = p.scene.tree.get(id) else {
+        return;
+    };
     let info = node.kind.info();
     let color = theme::category_color(info.category);
     let old_name = node.name.clone();
@@ -201,11 +210,14 @@ fn header(ui: &mut egui::Ui, p: &mut OpenProject, id: NodeId) {
         ui.horizontal(|ui| {
             ui.label(RichText::new(info.icon).size(22.0).color(color));
             ui.vertical(|ui| {
-                if ui.add(egui::TextEdit::singleline(&mut name).font(egui::TextStyle::Heading).desired_width(ui.available_width())).lost_focus() {
-                    if !name.trim().is_empty() && name != old_name {
-                        p.scene.tree.set_name(id, name.trim());
-                        p.scene.touched = true;
-                    }
+                if ui
+                    .add(egui::TextEdit::singleline(&mut name).font(egui::TextStyle::Heading).desired_width(ui.available_width()))
+                    .lost_focus()
+                    && !name.trim().is_empty()
+                    && name != old_name
+                {
+                    p.scene.tree.set_name(id, name.trim());
+                    p.scene.touched = true;
                 }
                 ui.label(RichText::new(format!("{}  ·  {}", info.type_name, p.scene.tree.path_of(id))).small().color(theme::TEXT_DIM));
             });
@@ -214,7 +226,9 @@ fn header(ui: &mut egui::Ui, p: &mut OpenProject, id: NodeId) {
 }
 
 fn properties(ui: &mut egui::Ui, p: &mut OpenProject, id: NodeId, files: &[String]) {
-    let Some(node) = p.scene.tree.get(id) else { return };
+    let Some(node) = p.scene.tree.get(id) else {
+        return;
+    };
     let props = node.property_list();
     let mut groups: Vec<&'static str> = Vec::new();
     for pr in &props {
@@ -224,18 +238,21 @@ fn properties(ui: &mut egui::Ui, p: &mut OpenProject, id: NodeId, files: &[Strin
     }
     let mut edits: Vec<(&'static str, Variant)> = Vec::new();
     for g in groups {
-        egui::CollapsingHeader::new(RichText::new(g).strong()).default_open(g != "Process" && g != "Node").id_salt(("insp", g)).show(ui, |ui| {
-            egui::Grid::new(("grid", g)).num_columns(2).spacing([10.0, 6.0]).min_col_width(96.0).striped(false).show(ui, |ui| {
-                for pr in props.iter().filter(|pr| pr.group == g) {
-                    let value = node.get(pr.name).unwrap_or_default();
-                    ui.label(RichText::new(pretty(pr.name)).color(theme::TEXT_DIM)).on_hover_text(pr.name);
-                    if let Some(v) = property_widget(ui, pr, &value, files) {
-                        edits.push((pr.name, v));
+        egui::CollapsingHeader::new(RichText::new(g).strong()).default_open(g != "Process" && g != "Node").id_salt(("insp", g)).show(
+            ui,
+            |ui| {
+                egui::Grid::new(("grid", g)).num_columns(2).spacing([10.0, 6.0]).min_col_width(96.0).striped(false).show(ui, |ui| {
+                    for pr in props.iter().filter(|pr| pr.group == g) {
+                        let value = node.get(pr.name).unwrap_or_default();
+                        ui.label(RichText::new(pretty(pr.name)).color(theme::TEXT_DIM)).on_hover_text(pr.name);
+                        if let Some(v) = property_widget(ui, pr, &value, files) {
+                            edits.push((pr.name, v));
+                        }
+                        ui.end_row();
                     }
-                    ui.end_row();
-                }
-            });
-        });
+                });
+            },
+        );
     }
     // Handy actions for specific types.
     if let NodeKind::Sprite2D(s) = &node.kind
@@ -421,7 +438,10 @@ fn signals_section(ui: &mut egui::Ui, p: &mut OpenProject, id: NodeId, shared: &
                             if let Some(bp) = p.scene.tree.get(target).and_then(|n| n.script.clone()).filter(|s| s.ends_with(".vbp")) {
                                 shared.request(Request::AddMethodHandler { blueprint: bp, method: method.clone() });
                             } else {
-                                shared.toast(LogLevel::Info, format!("Connected. Attach a blueprint to the target and add an \"On Event / Method\" named {method}."));
+                                shared.toast(
+                                    LogLevel::Info,
+                                    format!("Connected. Attach a blueprint to the target and add an \"On Event / Method\" named {method}."),
+                                );
                             }
                             form.method.clear();
                         }
@@ -443,12 +463,20 @@ fn variables_section(ui: &mut egui::Ui, p: &mut OpenProject, id: NodeId) {
             .tree
             .get(id)
             .and_then(|n| n.script.clone())
-            .and_then(|s| p.blueprints.iter().find(|b| b.path == s).map(|b| b.bp.variables.clone()).or_else(|| vd_blueprint::Blueprint::load(&p.dir.join(&s)).ok().map(|b| b.variables)))
+            .and_then(|s| {
+                p.blueprints
+                    .iter()
+                    .find(|b| b.path == s)
+                    .map(|b| b.bp.variables.clone())
+                    .or_else(|| vd_blueprint::Blueprint::load(&p.dir.join(&s)).ok().map(|b| b.variables))
+            })
             .unwrap_or_default()
             .into_iter()
             .filter(|v| v.exposed)
             .collect();
-        let Some(node) = p.scene.tree.get_mut(id) else { return };
+        let Some(node) = p.scene.tree.get_mut(id) else {
+            return;
+        };
         let mut changed = false;
         if !exposed.is_empty() {
             ui.label(RichText::new("Blueprint (exposed)").small().color(theme::TEXT_DIM));

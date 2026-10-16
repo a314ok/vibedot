@@ -168,10 +168,22 @@ fn color4(c: Color) -> [f32; 4] {
 fn affine_to_mat4(a: &Affine2) -> Mat4 {
     let m = a.matrix2;
     Mat4::from_cols_array(&[
-        m.x_axis.x, m.x_axis.y, 0.0, 0.0, //
-        m.y_axis.x, m.y_axis.y, 0.0, 0.0, //
-        0.0, 0.0, 1.0, 0.0, //
-        a.translation.x, a.translation.y, 0.0, 1.0,
+        m.x_axis.x,
+        m.x_axis.y,
+        0.0,
+        0.0, //
+        m.y_axis.x,
+        m.y_axis.y,
+        0.0,
+        0.0, //
+        0.0,
+        0.0,
+        1.0,
+        0.0, //
+        a.translation.x,
+        a.translation.y,
+        0.0,
+        1.0,
     ])
 }
 
@@ -198,11 +210,7 @@ impl Renderer {
             entries: &[wgpu::BindGroupLayoutEntry {
                 binding: 0,
                 visibility: wgpu::ShaderStages::VERTEX_FRAGMENT,
-                ty: wgpu::BindingType::Buffer {
-                    ty: wgpu::BufferBindingType::Uniform,
-                    has_dynamic_offset: false,
-                    min_binding_size: None,
-                },
+                ty: wgpu::BindingType::Buffer { ty: wgpu::BufferBindingType::Uniform, has_dynamic_offset: false, min_binding_size: None },
                 count: None,
             }],
         });
@@ -292,22 +300,9 @@ impl Renderer {
             },
         };
 
-        let scene_alpha = Self::canvas_pipeline(
-            &device,
-            &canvas_layout,
-            &canvas_module,
-            "fs_scene",
-            &[HDR_FORMAT, HDR_FORMAT],
-            alpha_blend,
-        );
-        let scene_add = Self::canvas_pipeline(
-            &device,
-            &canvas_layout,
-            &canvas_module,
-            "fs_scene",
-            &[HDR_FORMAT, HDR_FORMAT],
-            add_blend,
-        );
+        let scene_alpha =
+            Self::canvas_pipeline(&device, &canvas_layout, &canvas_module, "fs_scene", &[HDR_FORMAT, HDR_FORMAT], alpha_blend);
+        let scene_add = Self::canvas_pipeline(&device, &canvas_layout, &canvas_module, "fs_scene", &[HDR_FORMAT, HDR_FORMAT], add_blend);
 
         let light_attrs = wgpu::vertex_attr_array![0 => Float32x4, 1 => Float32x4];
         let light_pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
@@ -330,11 +325,7 @@ impl Renderer {
                 module: &canvas_module,
                 entry_point: Some("fs_light"),
                 compilation_options: Default::default(),
-                targets: &[Some(wgpu::ColorTargetState {
-                    format: HDR_FORMAT,
-                    blend: Some(add_blend),
-                    write_mask: wgpu::ColorWrites::ALL,
-                })],
+                targets: &[Some(wgpu::ColorTargetState { format: HDR_FORMAT, blend: Some(add_blend), write_mask: wgpu::ColorWrites::ALL })],
             }),
             multiview_mask: None,
             cache: None,
@@ -457,10 +448,8 @@ impl Renderer {
         r.insert_rgba(TexKey::White, &[255, 255, 255, 255], 1, 1, false);
         let atlas_view = r.atlas_texture.create_view(&Default::default());
         let atlas_bg = r.texture_bind_group(&atlas_view, false);
-        r.textures.insert(
-            TexKey::Atlas,
-            GpuTexture { bind_group: atlas_bg, size: (ATLAS_SIZE, ATLAS_SIZE), _texture: r.atlas_texture.clone() },
-        );
+        r.textures
+            .insert(TexKey::Atlas, GpuTexture { bind_group: atlas_bg, size: (ATLAS_SIZE, ATLAS_SIZE), _texture: r.atlas_texture.clone() });
         r
     }
 
@@ -558,14 +547,8 @@ impl Renderer {
             },
             alpha: wgpu::BlendComponent::OVER,
         };
-        let hud_alpha = Self::canvas_pipeline(
-            &self.device,
-            &canvas_layout,
-            &self.canvas_module,
-            "fs_hud",
-            &[format],
-            wgpu::BlendState::ALPHA_BLENDING,
-        );
+        let hud_alpha =
+            Self::canvas_pipeline(&self.device, &canvas_layout, &self.canvas_module, "fs_hud", &[format], wgpu::BlendState::ALPHA_BLENDING);
         let hud_add = Self::canvas_pipeline(&self.device, &canvas_layout, &self.canvas_module, "fs_hud", &[format], premul_add);
         self.outputs.insert(format, OutputPipelines { final_, hud_alpha, hud_add });
     }
@@ -712,11 +695,8 @@ impl Renderer {
     fn write_buffer_grow<T: Pod>(&mut self, which: u8, data: &[T]) {
         let bytes = bytemuck::cast_slice::<T, u8>(data);
         let elem = size_of::<T>() as u64;
-        let (buf, cap) = if which == 0 {
-            (&mut self.instance_buf, &mut self.instance_cap)
-        } else {
-            (&mut self.light_buf, &mut self.light_cap)
-        };
+        let (buf, cap) =
+            if which == 0 { (&mut self.instance_buf, &mut self.instance_cap) } else { (&mut self.light_buf, &mut self.light_cap) };
         let needed = data.len() as u64;
         if needed > *cap {
             *cap = needed.next_power_of_two();
@@ -737,11 +717,7 @@ impl Renderer {
             let cmd = &cmds[self.order[oi]];
             match &cmd.prim {
                 Prim::Quad(q) => {
-                    let key = if q.texture.is_empty() || q.shape != ShapeCode::Sprite {
-                        TexKey::White
-                    } else {
-                        TexKey::Path(q.texture)
-                    };
+                    let key = if q.texture.is_empty() || q.shape != ShapeCode::Sprite { TexKey::White } else { TexKey::Path(q.texture) };
                     self.ensure_texture(key);
                     let m = q.xform.matrix2;
                     let inst = Instance {
@@ -786,11 +762,12 @@ impl Renderer {
         self.instances.push(inst);
         if self.batches.len() > self.batch_floor
             && let Some(last) = self.batches.last_mut()
+            && last.tex == tex
+            && last.blend == blend
+            && last.start + last.count == idx
         {
-            if last.tex == tex && last.blend == blend && last.start + last.count == idx {
-                last.count += 1;
-                return;
-            }
+            last.count += 1;
+            return;
         }
         self.batches.push(Batch { tex, blend, start: idx, count: 1 });
     }
@@ -831,7 +808,8 @@ impl Renderer {
         let size = (size.0.max(1), size.1.max(1));
         let pixelate = list.env.pixelate.round().max(1.0);
         let needs_new = self.targets.as_ref().is_none_or(|t| {
-            t.size != size || t.internal != (((size.0 as f32 / pixelate).round() as u32).max(1), ((size.1 as f32 / pixelate).round() as u32).max(1))
+            t.size != size
+                || t.internal != (((size.0 as f32 / pixelate).round() as u32).max(1), ((size.1 as f32 / pixelate).round() as u32).max(1))
         });
         if needs_new {
             self.targets = Some(self.create_targets(size, pixelate));
@@ -867,10 +845,7 @@ impl Renderer {
         let lights: Vec<LightInstance> = list
             .lights
             .iter()
-            .map(|l| LightInstance {
-                pos_r: [l.position.x, l.position.y, l.radius, l.falloff],
-                color: color4(l.color),
-            })
+            .map(|l| LightInstance { pos_r: [l.position.x, l.position.y, l.radius, l.falloff], color: color4(l.color) })
             .collect();
         self.write_buffer_grow(1, &lights);
 
@@ -944,7 +919,9 @@ impl Renderer {
             pass.set_bind_group(0, &self.world_globals.1, &[]);
             pass.set_vertex_buffer(0, self.instance_buf.slice(..));
             for b in &self.batches[..world_batches] {
-                let Some(tex) = self.textures.get(&b.tex) else { continue };
+                let Some(tex) = self.textures.get(&b.tex) else {
+                    continue;
+                };
                 pass.set_pipeline(if b.blend == Blend::Additive { &self.scene_add } else { &self.scene_alpha });
                 pass.set_bind_group(1, &tex.bind_group, &[]);
                 pass.draw(0..6, b.start..b.start + b.count);
@@ -960,12 +937,7 @@ impl Renderer {
                     depth_slice: None,
                     resolve_target: None,
                     ops: wgpu::Operations {
-                        load: wgpu::LoadOp::Clear(wgpu::Color {
-                            r: f64::from(amb.r),
-                            g: f64::from(amb.g),
-                            b: f64::from(amb.b),
-                            a: 1.0,
-                        }),
+                        load: wgpu::LoadOp::Clear(wgpu::Color { r: f64::from(amb.r), g: f64::from(amb.g), b: f64::from(amb.b), a: 1.0 }),
                         store: wgpu::StoreOp::Store,
                     },
                 })],
@@ -1039,7 +1011,9 @@ impl Renderer {
             pass.set_bind_group(0, &self.hud_globals.1, &[]);
             pass.set_vertex_buffer(0, self.instance_buf.slice(..));
             for b in &self.batches[world_batches..] {
-                let Some(tex) = self.textures.get(&b.tex) else { continue };
+                let Some(tex) = self.textures.get(&b.tex) else {
+                    continue;
+                };
                 pass.set_pipeline(if b.blend == Blend::Additive { &out.hud_add } else { &out.hud_alpha });
                 pass.set_bind_group(1, &tex.bind_group, &[]);
                 pass.draw(0..6, b.start..b.start + b.count);

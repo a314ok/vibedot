@@ -13,30 +13,130 @@ use crate::vm::ExecCtx;
 pub enum Op {
     Identity,
     // math
-    Add, Sub, Mul, Div, Mod, Pow, Min, Max, Clamp, Lerp, MapRange, Abs, Negate, Sqrt, Sin, Cos, Atan2,
-    Round, Floor, Ceil, Sign, Wave, RandomRange, RandomInt, Chance, Time,
+    Add,
+    Sub,
+    Mul,
+    Div,
+    Mod,
+    Pow,
+    Min,
+    Max,
+    Clamp,
+    Lerp,
+    MapRange,
+    Abs,
+    Negate,
+    Sqrt,
+    Sin,
+    Cos,
+    Atan2,
+    Round,
+    Floor,
+    Ceil,
+    Sign,
+    Wave,
+    RandomRange,
+    RandomInt,
+    Chance,
+    Time,
     // vectors
-    MakeVec, BreakVec, Length, Normalize, Distance, DirectionTo, Dot, FromAngle, Angle, RotateVec, MoveToward,
-    RandomInCircle, ClampVec,
+    MakeVec,
+    BreakVec,
+    Length,
+    Normalize,
+    Distance,
+    DirectionTo,
+    Dot,
+    FromAngle,
+    Angle,
+    RotateVec,
+    MoveToward,
+    RandomInCircle,
+    ClampVec,
     // logic
-    Gt, Ge, Lt, Le, Eq, Ne, And, Or, Not, Select,
+    Gt,
+    Ge,
+    Lt,
+    Le,
+    Eq,
+    Ne,
+    And,
+    Or,
+    Not,
+    Select,
     // text / color / arrays
-    Concat, Format, ToText, MakeColor, Hsv, ArrayLen, ArrayGet, ArrayRandom,
+    Concat,
+    Format,
+    ToText,
+    MakeColor,
+    Hsv,
+    ArrayLen,
+    ArrayGet,
+    ArrayRandom,
     // node queries
-    SelfNode, GetNode, GetParent, FirstInGroup, NodesInGroup, IsValid, IsInGroup, GetName, GetPosition,
-    GetRotation, GetScale, NodeDistance, GetProperty, GetChild, ChildCount, FindChild, Reparent,
+    SelfNode,
+    GetNode,
+    GetParent,
+    FirstInGroup,
+    NodesInGroup,
+    IsValid,
+    IsInGroup,
+    GetName,
+    GetPosition,
+    GetRotation,
+    GetScale,
+    NodeDistance,
+    GetProperty,
+    GetChild,
+    ChildCount,
+    FindChild,
+    Reparent,
     // signals
-    ConnectSignal, DisconnectSignal, EmitSignal, IsConnected,
+    ConnectSignal,
+    DisconnectSignal,
+    EmitSignal,
+    IsConnected,
     // node commands
-    SetPosition, Translate, SetRotation, Rotate, LookAt, SetScale, SetVisible, SetProperty, SetText, SetColor,
-    AddToGroup, QueueFree, Spawn,
+    SetPosition,
+    Translate,
+    SetRotation,
+    Rotate,
+    LookAt,
+    SetScale,
+    SetVisible,
+    SetProperty,
+    SetText,
+    SetColor,
+    AddToGroup,
+    QueueFree,
+    Spawn,
     // physics
-    SetVelocity, GetVelocity, ApplyImpulse, IsOnFloor,
+    SetVelocity,
+    GetVelocity,
+    ApplyImpulse,
+    IsOnFloor,
     // input
-    ActionPressed, ActionJustPressed, Axis, InputVector, MousePosition,
+    ActionPressed,
+    ActionJustPressed,
+    Axis,
+    InputVector,
+    MousePosition,
     // game
-    Print, EmitEvent, ChangeScene, ReloadScene, CameraShake, HitStop, TimeScale, SetEnv, Flash, Burst, TimerStart,
-    TimerStop, Quit, SetPaused, IsPaused,
+    Print,
+    EmitEvent,
+    ChangeScene,
+    ReloadScene,
+    CameraShake,
+    HitStop,
+    TimeScale,
+    SetEnv,
+    Flash,
+    Burst,
+    TimerStart,
+    TimerStop,
+    Quit,
+    SetPaused,
+    IsPaused,
 }
 
 #[inline]
@@ -89,10 +189,10 @@ impl ExecCtx<'_> {
     }
 
     fn with_node(&mut self, v: &Variant, f: impl FnOnce(&mut vd_scene::Node)) {
-        if let Some(id) = self.node_arg(v) {
-            if let Some(node) = self.tree.get_mut(id) {
-                f(node);
-            }
+        if let Some(id) = self.node_arg(v)
+            && let Some(node) = self.tree.get_mut(id)
+        {
+            f(node);
         }
     }
 }
@@ -107,11 +207,14 @@ pub(crate) fn call(op: Op, a: &[Variant], outs: &mut [Variant], cx: &mut ExecCtx
     };
     match op {
         Identity => out0(outs, a[0].clone()),
-        Add => out0(outs, match (&a[0], &a[1]) {
-            (Variant::String(x), y) => Variant::str(format!("{x}{y}")),
-            (x, Variant::String(y)) => Variant::str(format!("{x}{y}")),
-            (x, y) => arith(x, y, |p, q| p + q, |p, q| p + q),
-        }),
+        Add => out0(
+            outs,
+            match (&a[0], &a[1]) {
+                (Variant::String(x), y) => Variant::str(format!("{x}{y}")),
+                (x, Variant::String(y)) => Variant::str(format!("{x}{y}")),
+                (x, y) => arith(x, y, |p, q| p + q, |p, q| p + q),
+            },
+        ),
         Sub => out0(outs, arith(&a[0], &a[1], |p, q| p - q, |p, q| p - q)),
         Mul => out0(outs, arith(&a[0], &a[1], |p, q| p * q, |p, q| p * q)),
         Div => out0(outs, arith(&a[0], &a[1], safe_div, vdiv)),
@@ -129,10 +232,13 @@ pub(crate) fn call(op: Op, a: &[Variant], outs: &mut [Variant], cx: &mut ExecCtx
             out0(outs, Variant::Number(n(&a[3]) + (n(&a[4]) - n(&a[3])) * t));
         }
         Abs => out0(outs, Variant::Number(n(&a[0]).abs())),
-        Negate => out0(outs, match &a[0] {
-            Variant::Vec2(v) => Variant::Vec2(-*v),
-            other => Variant::Number(-n(other)),
-        }),
+        Negate => out0(
+            outs,
+            match &a[0] {
+                Variant::Vec2(v) => Variant::Vec2(-*v),
+                other => Variant::Number(-n(other)),
+            },
+        ),
         Sqrt => out0(outs, Variant::Number(n(&a[0]).max(0.0).sqrt())),
         Sin => out0(outs, Variant::Number(n(&a[0]).to_radians().sin())),
         Cos => out0(outs, Variant::Number(n(&a[0]).to_radians().cos())),
@@ -364,10 +470,8 @@ pub(crate) fn call(op: Op, a: &[Variant], outs: &mut [Variant], cx: &mut ExecCtx
                 let from = cx.tree.global_position(id);
                 let d = a[1].to_vec2() - from;
                 if d.length_squared() > 1e-8 {
-                    let parent_rot = cx
-                        .tree
-                        .parent(id)
-                        .map_or(0.0, |p| vd_core::Transform2D::from_affine(&cx.tree.compute_global(p)).rotation);
+                    let parent_rot =
+                        cx.tree.parent(id).map_or(0.0, |p| vd_core::Transform2D::from_affine(&cx.tree.compute_global(p)).rotation);
                     if let Some(node) = cx.tree.get_mut(id) {
                         node.transform.rotation = d.y.atan2(d.x) - parent_rot;
                     }
@@ -465,9 +569,8 @@ pub(crate) fn call(op: Op, a: &[Variant], outs: &mut [Variant], cx: &mut ExecCtx
         TimeScale => cx.host.set_time_scale(a[0].to_f32()),
         SetEnv => {
             let prop = a[0].to_string();
-            let env = cx.tree.all_nodes().into_iter().find(|&id| {
-                matches!(cx.tree.get(id).map(|n| &n.kind), Some(NodeKind::WorldEnvironment(_)))
-            });
+            let env =
+                cx.tree.all_nodes().into_iter().find(|&id| matches!(cx.tree.get(id).map(|n| &n.kind), Some(NodeKind::WorldEnvironment(_))));
             if let Some(n) = env.and_then(|id| cx.tree.get_mut(id)) {
                 n.set(&prop, &a[1]);
             }

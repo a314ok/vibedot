@@ -168,7 +168,9 @@ pub fn draw_tree(tree: &SceneTree, out: &mut DrawList, time: f32) {
 pub fn draw_collision_shapes(tree: &SceneTree, out: &mut DrawList) {
     for id in tree.all_nodes() {
         let Some(node) = tree.get(id) else { continue };
-        let NodeKind::Body2D(b) = &node.kind else { continue };
+        let NodeKind::Body2D(b) = &node.kind else {
+            continue;
+        };
         let pos = node.global_position();
         let color = match b.body_type {
             vd_scene::BodyType::Area => Color::rgba(0.3, 1.0, 0.5, 0.5),

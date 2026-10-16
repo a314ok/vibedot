@@ -83,7 +83,10 @@ fn build_assets() -> MemAssets {
     // coin.vscn: Area2D with a persisted body_entered → _on_body_entered connection.
     let mut t = SceneTree::new();
     let root = t.root();
-    let mut coin = Node::new("Coin", NodeKind::Body2D(Body2D { body_type: BodyType::Area, shape: CollisionShape::Circle, radius: 16.0, ..Default::default() }));
+    let mut coin = Node::new(
+        "Coin",
+        NodeKind::Body2D(Body2D { body_type: BodyType::Area, shape: CollisionShape::Circle, radius: 16.0, ..Default::default() }),
+    );
     coin.script = Some("coin.vbp".into());
     coin.add_to_group("coins");
     let coin = t.add_new_child(root, coin).unwrap();
@@ -98,10 +101,15 @@ fn build_assets() -> MemAssets {
     main.script = Some("spawner.vbp".into());
     let main = t.add_new_child(root, main).unwrap();
     t.set_current_scene(Some(main));
-    let mut player = Node::new("Player", NodeKind::Body2D(Body2D { body_type: BodyType::Character, size: vec2(32.0, 32.0), ..Default::default() }));
+    let mut player =
+        Node::new("Player", NodeKind::Body2D(Body2D { body_type: BodyType::Character, size: vec2(32.0, 32.0), ..Default::default() }));
     player.script = Some("player.vbp".into());
     t.add_new_child(main, player).unwrap();
-    t.add_new_child(main, Node::new("SpawnTimer", NodeKind::Timer(Timer { wait_time: 0.5, one_shot: true, autostart: true, ..Default::default() }))).unwrap();
+    t.add_new_child(
+        main,
+        Node::new("SpawnTimer", NodeKind::Timer(Timer { wait_time: 0.5, one_shot: true, autostart: true, ..Default::default() })),
+    )
+    .unwrap();
     let mut score = Node::new("Score", NodeKind::Label(Label { text: "Score: 0".into(), ..Default::default() }));
     score.script = Some("score.vbp".into());
     score.unique_name_in_owner = true;

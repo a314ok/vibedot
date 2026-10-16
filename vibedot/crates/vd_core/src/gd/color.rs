@@ -85,24 +85,14 @@ impl GdColor {
         let pos = usize::from(s[0] == b'#');
         let digits = s.len() - pos;
         let (r, g, b, a) = match digits {
-            3 => (
-                parse_col4(s, pos) as f32 / 15.0,
-                parse_col4(s, pos + 1) as f32 / 15.0,
-                parse_col4(s, pos + 2) as f32 / 15.0,
-                1.0,
-            ),
+            3 => (parse_col4(s, pos) as f32 / 15.0, parse_col4(s, pos + 1) as f32 / 15.0, parse_col4(s, pos + 2) as f32 / 15.0, 1.0),
             4 => (
                 parse_col4(s, pos) as f32 / 15.0,
                 parse_col4(s, pos + 1) as f32 / 15.0,
                 parse_col4(s, pos + 2) as f32 / 15.0,
                 parse_col4(s, pos + 3) as f32 / 15.0,
             ),
-            6 => (
-                parse_col8(s, pos) as f32 / 255.0,
-                parse_col8(s, pos + 2) as f32 / 255.0,
-                parse_col8(s, pos + 4) as f32 / 255.0,
-                1.0,
-            ),
+            6 => (parse_col8(s, pos) as f32 / 255.0, parse_col8(s, pos + 2) as f32 / 255.0, parse_col8(s, pos + 4) as f32 / 255.0, 1.0),
             8 => (
                 parse_col8(s, pos) as f32 / 255.0,
                 parse_col8(s, pos + 2) as f32 / 255.0,
@@ -132,11 +122,7 @@ impl GdColor {
     }
 
     fn find_named(name: &str) -> Option<usize> {
-        let norm: String = name
-            .chars()
-            .filter(|c| !matches!(c, ' ' | '-' | '_' | '\'' | '.'))
-            .flat_map(char::to_uppercase)
-            .collect();
+        let norm: String = name.chars().filter(|c| !matches!(c, ' ' | '-' | '_' | '\'' | '.')).flat_map(char::to_uppercase).collect();
         NAMED_COLORS.iter().position(|(n, _)| n.replace('_', "") == norm)
     }
 
@@ -278,12 +264,7 @@ impl GdColor {
     }
 
     pub fn lerp(&self, to: GdColor, w: f32) -> Self {
-        Self::new(
-            math::lerp(self.r, to.r, w),
-            math::lerp(self.g, to.g, w),
-            math::lerp(self.b, to.b, w),
-            math::lerp(self.a, to.a, w),
-        )
+        Self::new(math::lerp(self.r, to.r, w), math::lerp(self.g, to.g, w), math::lerp(self.b, to.b, w), math::lerp(self.a, to.a, w))
     }
 
     pub fn darkened(&self, amount: f32) -> Self {
@@ -291,12 +272,7 @@ impl GdColor {
     }
 
     pub fn lightened(&self, amount: f32) -> Self {
-        Self::new(
-            self.r + (1.0 - self.r) * amount,
-            self.g + (1.0 - self.g) * amount,
-            self.b + (1.0 - self.b) * amount,
-            self.a,
-        )
+        Self::new(self.r + (1.0 - self.r) * amount, self.g + (1.0 - self.g) * amount, self.b + (1.0 - self.b) * amount, self.a)
     }
 
     pub fn blend(&self, over: GdColor) -> Self {
@@ -314,12 +290,7 @@ impl GdColor {
     }
 
     pub fn clamp(&self, min: GdColor, max: GdColor) -> Self {
-        Self::new(
-            self.r.clamp(min.r, max.r),
-            self.g.clamp(min.g, max.g),
-            self.b.clamp(min.b, max.b),
-            self.a.clamp(min.a, max.a),
-        )
+        Self::new(self.r.clamp(min.r, max.r), self.g.clamp(min.g, max.g), self.b.clamp(min.b, max.b), self.a.clamp(min.a, max.a))
     }
 
     pub fn srgb_to_linear(&self) -> Self {

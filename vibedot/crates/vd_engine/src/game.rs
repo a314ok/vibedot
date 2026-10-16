@@ -17,9 +17,7 @@ use vd_blueprint::{EventKind, Host, Instance, Program, compile};
 use vd_core::{Affine2, Color, Rect2, Rng, StringName, Variant, Vec2, vec2};
 use vd_physics::{Body, BodyKind, Shape, World};
 use vd_render::{DrawList, View2D};
-use vd_scene::{
-    BodyType, CollisionShape, NodeData, NodeId, NodeKind, Notification, Particle, SceneFile, SceneTree, TreeEvent,
-};
+use vd_scene::{BodyType, CollisionShape, NodeData, NodeId, NodeKind, Notification, Particle, SceneFile, SceneTree, TreeEvent};
 
 use crate::assets::{AssetSource, normalize_path};
 use crate::draw::draw_tree;
@@ -427,7 +425,9 @@ impl Game {
         id: NodeId,
         f: impl FnOnce(&mut Instance, &mut SceneTree, &mut HostState) -> Result<(), vd_blueprint::RuntimeError>,
     ) {
-        let Some(mut inst) = self.blueprints.remove(&id) else { return };
+        let Some(mut inst) = self.blueprints.remove(&id) else {
+            return;
+        };
         if let Err(e) = f(&mut inst, &mut self.tree, &mut self.host) {
             let path = self.tree.path_of(id);
             let at = e.node.map(|n| format!(" (blueprint node #{})", n.0)).unwrap_or_default();
@@ -439,7 +439,9 @@ impl Game {
     }
 
     fn with_script(&mut self, id: NodeId, f: impl FnOnce(&mut dyn NodeScript, &mut ScriptCtx<'_>)) {
-        let Some(mut s) = self.scripts.remove(&id) else { return };
+        let Some(mut s) = self.scripts.remove(&id) else {
+            return;
+        };
         {
             let mut cx = ScriptCtx { tree: &mut self.tree, host: &mut self.host, node: id };
             f(s.as_mut(), &mut cx);
@@ -478,7 +480,12 @@ impl Game {
             for ev in customs {
                 let targets: Vec<NodeId> = match ev.target {
                     Some(t) => vec![t],
-                    None => self.tree.all_nodes().into_iter().filter(|id| self.blueprints.contains_key(id) || self.scripts.contains_key(id)).collect(),
+                    None => self
+                        .tree
+                        .all_nodes()
+                        .into_iter()
+                        .filter(|id| self.blueprints.contains_key(id) || self.scripts.contains_key(id))
+                        .collect(),
                 };
                 for t in targets {
                     self.call_method(ev.sender, t, ev.name, std::slice::from_ref(&ev.payload));
@@ -510,7 +517,9 @@ impl Game {
         if self.blueprints.contains_key(&id) || self.scripts.contains_key(&id) {
             return;
         }
-        let Some(script) = self.tree.get(id).and_then(|n| n.script.clone()) else { return };
+        let Some(script) = self.tree.get(id).and_then(|n| n.script.clone()) else {
+            return;
+        };
         if script.is_empty() {
             return;
         }
@@ -530,7 +539,9 @@ impl Game {
             }
             return;
         }
-        let Some(program) = self.host.program(&script) else { return };
+        let Some(program) = self.host.program(&script) else {
+            return;
+        };
         let node = self.tree.get_mut(id).expect("checked");
         if program.has_event(EventKind::Process) {
             node.set_process(true);
@@ -591,12 +602,8 @@ impl Game {
 
     fn dispatch_input(&mut self) {
         let presses = self.host.input.press_order.clone();
-        let listeners: Vec<NodeId> = self
-            .tree
-            .all_nodes()
-            .into_iter()
-            .filter(|&id| self.blueprints.contains_key(&id) && self.tree.can_process(id))
-            .collect();
+        let listeners: Vec<NodeId> =
+            self.tree.all_nodes().into_iter().filter(|&id| self.blueprints.contains_key(&id) && self.tree.can_process(id)).collect();
         if listeners.is_empty() {
             return;
         }
@@ -650,7 +657,9 @@ impl Game {
                 continue;
             }
             let node = self.tree.get(id).expect("listed");
-            let NodeKind::Body2D(b) = &node.kind else { continue };
+            let NodeKind::Body2D(b) = &node.kind else {
+                continue;
+            };
             let gxf = node.global_transform();
             let scale = Vec2::new(gxf.matrix2.x_axis.length(), gxf.matrix2.y_axis.length());
             let shape = match b.shape {
@@ -677,7 +686,9 @@ impl Game {
         let view = self.host.view_rect();
         let bodies = std::mem::take(&mut self.physics.bodies);
         for body in &bodies {
-            let Some(id) = NodeId::from_bits(body.key).filter(|&id| self.tree.contains(id)) else { continue };
+            let Some(id) = NodeId::from_bits(body.key).filter(|&id| self.tree.contains(id)) else {
+                continue;
+            };
             if !matches!(body.kind, BodyKind::Character | BodyKind::Rigid) {
                 continue;
             }
@@ -706,7 +717,9 @@ impl Game {
     }
 
     fn contact(&mut self, me: u64, other: u64, entered: bool) {
-        let (Some(me), Some(other)) = (NodeId::from_bits(me), NodeId::from_bits(other)) else { return };
+        let (Some(me), Some(other)) = (NodeId::from_bits(me), NodeId::from_bits(other)) else {
+            return;
+        };
         if !self.tree.contains(me) || !self.tree.contains(other) {
             return;
         }
@@ -724,8 +737,12 @@ impl Game {
             if !self.tree.can_process(id) {
                 continue;
             }
-            let Some(node) = self.tree.get_mut(id) else { continue };
-            let NodeKind::Timer(t) = &mut node.kind else { continue };
+            let Some(node) = self.tree.get_mut(id) else {
+                continue;
+            };
+            let NodeKind::Timer(t) = &mut node.kind else {
+                continue;
+            };
             if !t.initialized {
                 t.initialized = true;
                 t.running = t.autostart;
@@ -766,7 +783,9 @@ impl Game {
             if !self.tree.can_process(id) {
                 continue;
             }
-            let Some(node) = self.tree.get(id) else { continue };
+            let Some(node) = self.tree.get(id) else {
+                continue;
+            };
             if !matches!(node.kind, NodeKind::Particles2D(_)) {
                 continue;
             }
@@ -848,9 +867,11 @@ impl Game {
     }
 
     fn update_camera(&mut self, dt: f32) {
-        let cam = self.tree.all_nodes().into_iter().find(|&id| {
-            matches!(self.tree.get(id).map(|n| &n.kind), Some(NodeKind::Camera2D(c)) if c.current)
-        });
+        let cam = self
+            .tree
+            .all_nodes()
+            .into_iter()
+            .find(|&id| matches!(self.tree.get(id).map(|n| &n.kind), Some(NodeKind::Camera2D(c)) if c.current));
         let viewport = self.host.viewport;
         let Some(cam) = cam else {
             self.host.view = View2D { center: viewport * 0.5, zoom: 1.0, rotation: 0.0 };

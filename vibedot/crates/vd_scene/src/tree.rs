@@ -76,7 +76,13 @@ pub struct Connection {
 pub enum TreeEvent {
     Notification(NodeId, Notification),
     /// A connected signal fired: call `method` on `target` with `args`.
-    Call { source: NodeId, signal: StringName, target: NodeId, method: StringName, args: Vec<Variant> },
+    Call {
+        source: NodeId,
+        signal: StringName,
+        target: NodeId,
+        method: StringName,
+        args: Vec<Variant>,
+    },
 }
 
 #[derive(Clone, Debug)]
@@ -99,16 +105,8 @@ impl Default for SceneTree {
 }
 
 /// Built-in signals every node has (for editor UIs).
-pub const NODE_SIGNALS: &[&str] = &[
-    "ready",
-    "tree_entered",
-    "tree_exiting",
-    "tree_exited",
-    "renamed",
-    "child_entered_tree",
-    "child_exiting_tree",
-    "child_order_changed",
-];
+pub const NODE_SIGNALS: &[&str] =
+    &["ready", "tree_entered", "tree_exiting", "tree_exited", "renamed", "child_entered_tree", "child_exiting_tree", "child_order_changed"];
 
 impl SceneTree {
     /// Empty tree with a `root` node (Godot's root `Window`).
@@ -258,9 +256,7 @@ impl SceneTree {
 
     /// Position among siblings, `-1` without a parent.
     pub fn get_index(&self, id: NodeId) -> i32 {
-        self.get_parent(id)
-            .and_then(|p| self.get_children(p).iter().position(|&c| c == id))
-            .map_or(-1, |i| i as i32)
+        self.get_parent(id).and_then(|p| self.get_children(p).iter().position(|&c| c == id)).map_or(-1, |i| i as i32)
     }
 
     pub fn is_ancestor_of(&self, ancestor: NodeId, node: NodeId) -> bool {
@@ -298,9 +294,7 @@ impl SceneTree {
     fn generate_serial_child_name(&self, parent: NodeId, child: NodeId, name: &str) -> String {
         let class = self.nodes[child].get_class();
         let name = if name.is_empty() { class } else { name };
-        let taken = |candidate: &str| {
-            self.get_children(parent).iter().any(|&c| c != child && self.nodes[c].name == candidate)
-        };
+        let taken = |candidate: &str| self.get_children(parent).iter().any(|&c| c != child && self.nodes[c].name == candidate);
         if !taken(name) {
             return name.to_owned();
         }
@@ -325,8 +319,7 @@ impl SceneTree {
         let new_name = if force_readable {
             self.generate_serial_child_name(parent, child, &current)
         } else {
-            let unique = !current.is_empty()
-                && !self.get_children(parent).iter().any(|&c| c != child && self.nodes[c].name == current);
+            let unique = !current.is_empty() && !self.get_children(parent).iter().any(|&c| c != child && self.nodes[c].name == current);
             if unique {
                 current
             } else {
@@ -841,9 +834,7 @@ impl SceneTree {
                 unique if unique.starts_with('%') => {
                     let name = &unique[1..];
                     let owner = self.owner_scene_of(cur);
-                    self.preorder(owner)
-                        .into_iter()
-                        .find(|&id| self.nodes[id].unique_name_in_owner && self.nodes[id].name == name)?
+                    self.preorder(owner).into_iter().find(|&id| self.nodes[id].unique_name_in_owner && self.nodes[id].name == name)?
                 }
                 name => self.get_children(cur).iter().copied().find(|&c| self.nodes[c].name == name)?,
             };
@@ -1029,10 +1020,8 @@ impl SceneTree {
     pub fn disconnect(&mut self, source: NodeId, signal: &str, target: NodeId, method: &str) -> Result<(), TreeError> {
         let (signal, method) = (StringName::new(signal), StringName::new(method));
         let list = self.connections.get_mut(&source).ok_or(TreeError::NotConnected)?;
-        let pos = list
-            .iter()
-            .position(|c| c.signal == signal && c.target == target && c.method == method)
-            .ok_or(TreeError::NotConnected)?;
+        let pos =
+            list.iter().position(|c| c.signal == signal && c.target == target && c.method == method).ok_or(TreeError::NotConnected)?;
         if list[pos].refcount > 1 {
             list[pos].refcount -= 1;
         } else {
@@ -1043,9 +1032,7 @@ impl SceneTree {
 
     pub fn is_connected(&self, source: NodeId, signal: &str, target: NodeId, method: &str) -> bool {
         let (signal, method) = (StringName::new(signal), StringName::new(method));
-        self.connections
-            .get(&source)
-            .is_some_and(|l| l.iter().any(|c| c.signal == signal && c.target == target && c.method == method))
+        self.connections.get(&source).is_some_and(|l| l.iter().any(|c| c.signal == signal && c.target == target && c.method == method))
     }
 
     pub fn get_signal_connection_list(&self, source: NodeId, signal: &str) -> Vec<Connection> {
@@ -1060,7 +1047,9 @@ impl SceneTree {
     /// `emit_signal(name, args...)`: queues a call for every connection.
     /// Returns how many connections fired.
     pub fn emit_signal(&mut self, source: NodeId, signal: &str, args: &[Variant]) -> usize {
-        let Some(list) = self.connections.get_mut(&source) else { return 0 };
+        let Some(list) = self.connections.get_mut(&source) else {
+            return 0;
+        };
         let signal = StringName::new(signal);
         let mut fired = Vec::new();
         list.retain(|c| {
@@ -1086,7 +1075,9 @@ impl SceneTree {
     pub fn update_transforms(&mut self) {
         let mut stack: Vec<(NodeId, Affine2, Color, bool)> = vec![(self.root, Affine2::IDENTITY, Color::WHITE, true)];
         while let Some((id, parent_xf, parent_mod, parent_vis)) = stack.pop() {
-            let Some(n) = self.nodes.get_mut(id) else { continue };
+            let Some(n) = self.nodes.get_mut(id) else {
+                continue;
+            };
             n.global = if n.kind.is_2d() { parent_xf * n.transform.to_affine() } else { parent_xf };
             n.global_modulate = parent_mod * n.modulate;
             n.global_visible = parent_vis && n.visible;

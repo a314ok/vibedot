@@ -141,9 +141,7 @@ pub fn penetration(a_shape: &Shape, a_pos: Vec2, b_shape: &Shape, b_pos: Vec2) -
             Some((n, r - dist))
         }
         (Shape::Circle { radius }, Shape::Rect { half }) => circle_rect(a_pos, radius, b_pos, half),
-        (Shape::Rect { half }, Shape::Circle { radius }) => {
-            circle_rect(b_pos, radius, a_pos, half).map(|(n, d)| (-n, d))
-        }
+        (Shape::Rect { half }, Shape::Circle { radius }) => circle_rect(b_pos, radius, a_pos, half).map(|(n, d)| (-n, d)),
     }
 }
 
@@ -231,7 +229,9 @@ impl World {
                 if !bi.is_solid() || !bj.is_solid() || (!bi.moves() && !bj.moves()) {
                     continue;
                 }
-                let Some((n, depth)) = penetration(&bi.shape, bi.pos, &bj.shape, bj.pos) else { continue };
+                let Some((n, depth)) = penetration(&bi.shape, bi.pos, &bj.shape, bj.pos) else {
+                    continue;
+                };
                 if depth <= 1e-4 {
                     continue;
                 }

@@ -8,7 +8,7 @@ use std::collections::BTreeSet;
 use eframe::egui::{self, Color32, Pos2, Rect, RichText, Stroke};
 use vd_blueprint::defs::{self, Flavor, NodeDef, PinDef, PinKind};
 use vd_blueprint::graph::Comment;
-use vd_blueprint::{BpNodeId, Blueprint, PinRef};
+use vd_blueprint::{Blueprint, BpNodeId, PinRef};
 use vd_core::{Color, VType, Variant, Vec2, vec2};
 use vd_egui::theme;
 use vd_engine::LogLevel;
@@ -142,12 +142,26 @@ fn wire(painter: &egui::Painter, a: Pos2, b: Pos2, color: Color32, width: f32) {
 fn literal_text(v: &Variant) -> String {
     match v {
         Variant::Number(n) => {
-            if n.fract() == 0.0 { format!("{n:.0}") } else { format!("{n:.2}") }
+            if n.fract() == 0.0 {
+                format!("{n:.0}")
+            } else {
+                format!("{n:.2}")
+            }
         }
         Variant::Vec2(v) => format!("{:.0}, {:.0}", v.x, v.y),
-        Variant::Bool(b) => if *b { "✔".into() } else { "✖".into() },
+        Variant::Bool(b) => {
+            if *b {
+                "✔".into()
+            } else {
+                "✖".into()
+            }
+        }
         Variant::String(s) => {
-            if s.chars().count() > 14 { format!("\"{}…\"", s.chars().take(13).collect::<String>()) } else { format!("\"{s}\"") }
+            if s.chars().count() > 14 {
+                format!("\"{}…\"", s.chars().take(13).collect::<String>())
+            } else {
+                format!("\"{s}\"")
+            }
         }
         Variant::Nil => "—".into(),
         other => other.to_string(),
@@ -161,32 +175,36 @@ fn shows_literal(pin: &PinDef) -> bool {
 /// Main canvas.
 pub fn show(ui: &mut egui::Ui, p: &mut OpenProject, shared: &mut Shared) {
     // Tabs of open blueprints.
-    egui::Panel::top("bp_tabs").exact_size(34.0).frame(egui::Frame::NONE.fill(theme::BG).inner_margin(egui::Margin::symmetric(8, 4))).show(ui, |ui| {
-        ui.horizontal(|ui| {
-            let mut close = None;
-            for (i, doc) in p.blueprints.iter().enumerate() {
-                let active = p.active_bp == Some(i);
-                let label = format!("🔷 {}{}", doc.file_name(), if doc.dirty { " •" } else { "" });
-                let b = egui::Button::new(RichText::new(label).color(if active { Color32::WHITE } else { theme::TEXT_DIM })).fill(if active { theme::SURFACE_HI } else { Color32::TRANSPARENT });
-                if ui.add(b).clicked() {
-                    p.active_bp = Some(i);
+    egui::Panel::top("bp_tabs").exact_size(34.0).frame(egui::Frame::NONE.fill(theme::BG).inner_margin(egui::Margin::symmetric(8, 4))).show(
+        ui,
+        |ui| {
+            ui.horizontal(|ui| {
+                let mut close = None;
+                for (i, doc) in p.blueprints.iter().enumerate() {
+                    let active = p.active_bp == Some(i);
+                    let label = format!("🔷 {}{}", doc.file_name(), if doc.dirty { " •" } else { "" });
+                    let b = egui::Button::new(RichText::new(label).color(if active { Color32::WHITE } else { theme::TEXT_DIM }))
+                        .fill(if active { theme::SURFACE_HI } else { Color32::TRANSPARENT });
+                    if ui.add(b).clicked() {
+                        p.active_bp = Some(i);
+                    }
+                    if active && ui.small_button("✖").on_hover_text("Close").clicked() {
+                        close = Some(i);
+                    }
                 }
-                if active && ui.small_button("✖").on_hover_text("Close").clicked() {
-                    close = Some(i);
+                if let Some(i) = close {
+                    if p.blueprints[i].dirty {
+                        let _ = p.blueprints[i].save(&p.dir);
+                    }
+                    p.blueprints.remove(i);
+                    p.active_bp = if p.blueprints.is_empty() { None } else { Some(i.saturating_sub(1).min(p.blueprints.len() - 1)) };
                 }
-            }
-            if let Some(i) = close {
-                if p.blueprints[i].dirty {
-                    let _ = p.blueprints[i].save(&p.dir);
+                if p.blueprints.is_empty() {
+                    ui.label(RichText::new("No blueprint open").color(theme::TEXT_DIM));
                 }
-                p.blueprints.remove(i);
-                p.active_bp = if p.blueprints.is_empty() { None } else { Some(i.saturating_sub(1).min(p.blueprints.len() - 1)) };
-            }
-            if p.blueprints.is_empty() {
-                ui.label(RichText::new("No blueprint open").color(theme::TEXT_DIM));
-            }
-        });
-    });
+            });
+        },
+    );
 
     let Some(idx) = p.active_bp.filter(|&i| i < p.blueprints.len()) else {
         egui::CentralPanel::default().show(ui, |ui| {
@@ -195,7 +213,12 @@ pub fn show(ui: &mut egui::Ui, p: &mut OpenProject, shared: &mut Shared) {
                 ui.label(RichText::new("🔷").size(64.0).color(theme::ACCENT));
                 ui.label(RichText::new("Visual scripting with Blueprints").size(22.0).strong());
                 ui.add_space(8.0);
-                ui.label(RichText::new("Open a .vbp from the FileSystem dock, or attach a new blueprint to a node\nfrom the Inspector (Script » New).").color(theme::TEXT_DIM));
+                ui.label(
+                    RichText::new(
+                        "Open a .vbp from the FileSystem dock, or attach a new blueprint to a node\nfrom the Inspector (Script » New).",
+                    )
+                    .color(theme::TEXT_DIM),
+                );
                 ui.add_space(16.0);
                 for f in p.files.iter().filter(|f| f.ends_with(".vbp")).take(12) {
                     if ui.button(format!("🔷 {f}")).clicked() {
@@ -298,13 +321,21 @@ fn canvas(ui: &mut egui::Ui, doc: &mut BpDoc, g: &mut GraphUi, shared: &mut Shar
         let col = Color32::from_rgba_unmultiplied((c.color.r * 255.0) as u8, (c.color.g * 255.0) as u8, (c.color.b * 255.0) as u8, 40);
         painter.rect_filled(r, 10, col);
         painter.rect_stroke(r, 10, Stroke::new(1.0, col.gamma_multiply(3.0)), egui::StrokeKind::Inside);
-        painter.text(r.left_top() + egui::vec2(10.0, 8.0) * view.zoom, egui::Align2::LEFT_TOP, &c.text, egui::FontId::proportional(15.0 * view.zoom.max(0.6)), Color32::from_white_alpha(200));
+        painter.text(
+            r.left_top() + egui::vec2(10.0, 8.0) * view.zoom,
+            egui::Align2::LEFT_TOP,
+            &c.text,
+            egui::FontId::proportional(15.0 * view.zoom.max(0.6)),
+            Color32::from_white_alpha(200),
+        );
         let _ = ci;
     }
 
     // Wires.
     for l in &doc.bp.links {
-        let (Some(a), Some(b)) = (pin_pos(&l.from, true), pin_pos(&l.to, false)) else { continue };
+        let (Some(a), Some(b)) = (pin_pos(&l.from, true), pin_pos(&l.to, false)) else {
+            continue;
+        };
         let kind = doc.bp.pin_kind(l.from.node, &l.from.pin, true).unwrap_or(PinKind::Exec);
         let w = if kind == PinKind::Exec { 3.0 } else { 2.2 };
         let selected = doc.selection.contains(&l.from.node) || doc.selection.contains(&l.to.node);
@@ -366,7 +397,13 @@ fn canvas(ui: &mut egui::Ui, doc: &mut BpDoc, g: &mut GraphUi, shared: &mut Shar
             Flavor::Pure(_) => "ƒ",
             Flavor::Exec(_) => "▶",
         };
-        painter.text(header.left_center() + egui::vec2(10.0 * view.zoom, 0.0), egui::Align2::LEFT_CENTER, format!("{icon}  {}", title_of(n, def)), font(13.5), Color32::WHITE);
+        painter.text(
+            header.left_center() + egui::vec2(10.0 * view.zoom, 0.0),
+            egui::Align2::LEFT_CENTER,
+            format!("{icon}  {}", title_of(n, def)),
+            font(13.5),
+            Color32::WHITE,
+        );
         let border = if error.is_some() {
             Stroke::new(2.0, theme::ERR)
         } else if selected {
@@ -393,7 +430,10 @@ fn canvas(ui: &mut egui::Ui, doc: &mut BpDoc, g: &mut GraphUi, shared: &mut Shar
                 let value = n.literal(pin.name);
                 let txt = literal_text(&value);
                 let galley = painter.layout_no_wrap(txt, font(11.5), theme::TEXT);
-                let pill = Rect::from_min_size(Pos2::new(lr.right() + 6.0 * view.zoom, pos.y - galley.size().y / 2.0 - 2.0), galley.size() + egui::vec2(10.0, 4.0));
+                let pill = Rect::from_min_size(
+                    Pos2::new(lr.right() + 6.0 * view.zoom, pos.y - galley.size().y / 2.0 - 2.0),
+                    galley.size() + egui::vec2(10.0, 4.0),
+                );
                 let pill_fill = if let PinKind::Data(VType::Color) = kind {
                     crate::inspector::to_color32(value.to_color())
                 } else {
@@ -416,7 +456,13 @@ fn canvas(ui: &mut egui::Ui, doc: &mut BpDoc, g: &mut GraphUi, shared: &mut Shar
 
     // ------------------------------------------------------------ input
     let (pressed, released, sec_clicked, shift, cmd) = ctx.input(|i| {
-        (i.pointer.primary_pressed(), i.pointer.primary_released(), i.pointer.button_clicked(egui::PointerButton::Secondary), i.modifiers.shift, i.modifiers.command)
+        (
+            i.pointer.primary_pressed(),
+            i.pointer.primary_released(),
+            i.pointer.button_clicked(egui::PointerButton::Secondary),
+            i.modifiers.shift,
+            i.modifiers.command,
+        )
     });
     let over_canvas = resp.hovered() || resp.dragged();
     if pressed && over_canvas && g.palette.is_none() && g.literal.is_none() && g.menu.is_none() {
@@ -464,7 +510,8 @@ fn canvas(ui: &mut egui::Ui, doc: &mut BpDoc, g: &mut GraphUi, shared: &mut Shar
                 Press::Comment(ci) => {
                     if let Some(c) = doc.bp.comments.get(ci) {
                         let r = Rect::from_min_size(view.to_screen(c.pos), egui::vec2(c.size.x, c.size.y) * view.zoom);
-                        let inside: Vec<BpNodeId> = layouts.iter().filter(|(_, _, l)| r.contains_rect(l.rect)).map(|(id, _, _)| *id).collect();
+                        let inside: Vec<BpNodeId> =
+                            layouts.iter().filter(|(_, _, l)| r.contains_rect(l.rect)).map(|(id, _, _)| *id).collect();
                         for nid in inside {
                             if let Some(n) = doc.bp.node_mut(nid) {
                                 n.pos += vec2(d.x, d.y);
@@ -482,12 +529,12 @@ fn canvas(ui: &mut egui::Ui, doc: &mut BpDoc, g: &mut GraphUi, shared: &mut Shar
         }
     }
     // Live wire / box.
-    if let (Some((Press::Pin(pin, out), _)), Some(end)) = (&g.press, g.wire_end) {
-        if let Some(a) = pin_pos(pin, *out) {
-            let kind = doc.bp.pin_kind(pin.node, &pin.pin, *out).unwrap_or(PinKind::Exec);
-            let (s, e) = if *out { (a, end) } else { (end, a) };
-            wire(&painter, s, e, type_color(kind), 2.5);
-        }
+    if let (Some((Press::Pin(pin, out), _)), Some(end)) = (&g.press, g.wire_end)
+        && let Some(a) = pin_pos(pin, *out)
+    {
+        let kind = doc.bp.pin_kind(pin.node, &pin.pin, *out).unwrap_or(PinKind::Exec);
+        let (s, e) = if *out { (a, end) } else { (end, a) };
+        wire(&painter, s, e, type_color(kind), 2.5);
     }
     if let (Some((Press::Empty, start)), Some(end)) = (&g.press, g.box_end) {
         let r = Rect::from_two_pos(*start, end);
@@ -509,7 +556,14 @@ fn canvas(ui: &mut egui::Ui, doc: &mut BpDoc, g: &mut GraphUi, shared: &mut Shar
                     } else if rect.contains(m) {
                         let kind = doc.bp.pin_kind(pin.node, &pin.pin, out).unwrap_or(PinKind::Exec);
                         g.opened_frame = ctx.cumulative_frame_nr();
-                        g.palette = Some(Palette { screen: m, world: view.to_world(m), search: String::new(), from: Some((pin, out, kind)), focus: false, focus_frames: 6 });
+                        g.palette = Some(Palette {
+                            screen: m,
+                            world: view.to_world(m),
+                            search: String::new(),
+                            from: Some((pin, out, kind)),
+                            focus: false,
+                            focus_frames: 6,
+                        });
                     }
                 }
                 Press::Pin(pin, _) => {
@@ -574,7 +628,8 @@ fn canvas(ui: &mut egui::Ui, doc: &mut BpDoc, g: &mut GraphUi, shared: &mut Shar
             g.menu = Some((nid, m));
         } else {
             g.opened_frame = ctx.cumulative_frame_nr();
-            g.palette = Some(Palette { screen: m, world: view.to_world(m), search: String::new(), from: None, focus: false, focus_frames: 6 });
+            g.palette =
+                Some(Palette { screen: m, world: view.to_world(m), search: String::new(), from: None, focus: false, focus_frames: 6 });
         }
     }
 
@@ -628,13 +683,22 @@ fn canvas(ui: &mut egui::Ui, doc: &mut BpDoc, g: &mut GraphUi, shared: &mut Shar
         RichText::new(format!("✖ {} error(s)", doc.errors.len())).color(theme::ERR)
     };
     let tl = rect.right_top() + egui::vec2(-14.0, 10.0);
-    painter.text(tl, egui::Align2::RIGHT_TOP, status.text(), egui::FontId::proportional(13.0), if doc.errors.is_empty() { theme::OK } else { theme::ERR });
+    painter.text(
+        tl,
+        egui::Align2::RIGHT_TOP,
+        status.text(),
+        egui::FontId::proportional(13.0),
+        if doc.errors.is_empty() { theme::OK } else { theme::ERR },
+    );
     let hint_strip = Rect::from_min_max(Pos2::new(rect.left(), rect.bottom() - 26.0), rect.right_bottom());
     painter.rect_filled(hint_strip, 0, Color32::from_rgba_unmultiplied(11, 11, 16, 230));
     painter.text(
         rect.left_bottom() + egui::vec2(12.0, -7.0),
         egui::Align2::LEFT_BOTTOM,
-        format!("{:.0}%  ·  RMB: add node / menu  ·  drag pins to connect  ·  Alt+click pin: break  ·  C: comment  ·  F: frame", view.zoom * 100.0),
+        format!(
+            "{:.0}%  ·  RMB: add node / menu  ·  drag pins to connect  ·  Alt+click pin: break  ·  C: comment  ·  F: frame",
+            view.zoom * 100.0
+        ),
         egui::FontId::proportional(11.0),
         theme::TEXT_DIM,
     );
@@ -645,7 +709,13 @@ fn draw_pin(painter: &egui::Painter, pos: Pos2, kind: PinKind, connected: bool, 
     let r = PIN_R * zoom.clamp(0.6, 1.5);
     match kind {
         PinKind::Exec => {
-            let pts = vec![pos + egui::vec2(-r, -r), pos + egui::vec2(r * 0.9, -r), pos + egui::vec2(r * 1.6, 0.0), pos + egui::vec2(r * 0.9, r), pos + egui::vec2(-r, r)];
+            let pts = vec![
+                pos + egui::vec2(-r, -r),
+                pos + egui::vec2(r * 0.9, -r),
+                pos + egui::vec2(r * 1.6, 0.0),
+                pos + egui::vec2(r * 0.9, r),
+                pos + egui::vec2(-r, r),
+            ];
             if connected {
                 painter.add(egui::Shape::convex_polygon(pts, c, Stroke::NONE));
             } else {
@@ -695,8 +765,12 @@ fn copy_selection(doc: &BpDoc) -> String {
 }
 
 fn paste_nodes(doc: &mut BpDoc, clip: &str, at: Vec2) {
-    let Ok(sub) = Blueprint::from_json(clip) else { return };
-    let Some(min) = sub.nodes.iter().map(|n| n.pos).reduce(|a, b| a.min(b)) else { return };
+    let Ok(sub) = Blueprint::from_json(clip) else {
+        return;
+    };
+    let Some(min) = sub.nodes.iter().map(|n| n.pos).reduce(|a, b| a.min(b)) else {
+        return;
+    };
     let mut map = std::collections::HashMap::new();
     for n in &sub.nodes {
         let nid = doc.bp.add_node(&n.op, n.pos - min + at);
@@ -714,7 +788,9 @@ fn paste_nodes(doc: &mut BpDoc, clip: &str, at: Vec2) {
 
 fn comment_selection(doc: &mut BpDoc, layouts: &[(BpNodeId, &'static NodeDef, Layout)], view: &View) {
     let rects: Vec<Rect> = layouts.iter().filter(|(id, _, _)| doc.selection.contains(id)).map(|(_, _, l)| l.rect).collect();
-    let Some(bb) = rects.into_iter().reduce(|a, b| a.union(b)) else { return };
+    let Some(bb) = rects.into_iter().reduce(|a, b| a.union(b)) else {
+        return;
+    };
     let min = view.to_world(bb.min) - vec2(20.0, 44.0);
     let max = view.to_world(bb.max) + vec2(20.0, 20.0);
     doc.bp.comments.push(Comment { pos: min, size: max - min, text: "Comment".into(), color: Color::rgba(0.55, 0.36, 0.96, 1.0) });
@@ -722,14 +798,10 @@ fn comment_selection(doc: &mut BpDoc, layouts: &[(BpNodeId, &'static NodeDef, La
 }
 
 fn frame_all(doc: &BpDoc, rect: Rect, view: &mut View, selection_only: bool) {
-    let nodes: Vec<Vec2> = doc
-        .bp
-        .nodes
-        .iter()
-        .filter(|n| !selection_only || doc.selection.contains(&n.id))
-        .map(|n| n.pos)
-        .collect();
-    let (Some(min), Some(max)) = (nodes.iter().copied().reduce(Vec2::min), nodes.iter().copied().reduce(Vec2::max)) else { return };
+    let nodes: Vec<Vec2> = doc.bp.nodes.iter().filter(|n| !selection_only || doc.selection.contains(&n.id)).map(|n| n.pos).collect();
+    let (Some(min), Some(max)) = (nodes.iter().copied().reduce(Vec2::min), nodes.iter().copied().reduce(Vec2::max)) else {
+        return;
+    };
     let max = max + vec2(260.0, 160.0);
     let size = max - min;
     view.zoom = (rect.width() / size.x).min(rect.height() / size.y).clamp(0.25, 1.2) * 0.9;
@@ -761,7 +833,12 @@ fn node_menu(ctx: &egui::Context, doc: &mut BpDoc, g: &mut GraphUi) {
                 // Approximate: comment around the node.
                 if let Some(n) = doc.bp.node(nid) {
                     let pos = n.pos;
-                    doc.bp.comments.push(Comment { pos: pos - vec2(20.0, 44.0), size: vec2(300.0, 200.0), text: "Comment".into(), color: Color::rgba(0.55, 0.36, 0.96, 1.0) });
+                    doc.bp.comments.push(Comment {
+                        pos: pos - vec2(20.0, 44.0),
+                        size: vec2(300.0, 200.0),
+                        text: "Comment".into(),
+                        color: Color::rgba(0.55, 0.36, 0.96, 1.0),
+                    });
                     doc.touched = true;
                 }
                 close = true;
@@ -774,7 +851,10 @@ fn node_menu(ctx: &egui::Context, doc: &mut BpDoc, g: &mut GraphUi) {
         });
     });
     let fresh = ctx.cumulative_frame_nr() == g.opened_frame;
-    if close || (!fresh && ctx.input(|i| i.pointer.any_pressed()) && !pointer_in(ctx, area.response.rect)) || ctx.input(|i| i.key_pressed(egui::Key::Escape)) {
+    if close
+        || (!fresh && ctx.input(|i| i.pointer.any_pressed()) && !pointer_in(ctx, area.response.rect))
+        || ctx.input(|i| i.key_pressed(egui::Key::Escape))
+    {
         g.menu = None;
     }
 }
@@ -788,7 +868,11 @@ fn compatible(def: &NodeDef, from: &Option<(PinRef, bool, PinKind)>) -> Option<&
                 && match (kind, p.kind) {
                     (PinKind::Exec, PinKind::Exec) => true,
                     (PinKind::Data(a), PinKind::Data(b)) => {
-                        if *out { b.accepts(*a) } else { a.accepts(b) }
+                        if *out {
+                            b.accepts(*a)
+                        } else {
+                            a.accepts(b)
+                        }
                     }
                     _ => false,
                 }
@@ -819,7 +903,13 @@ fn palette(ctx: &egui::Context, doc: &mut BpDoc, g: &mut GraphUi, shared: &mut S
             let mut list: Vec<&'static NodeDef> = defs::LIBRARY
                 .iter()
                 .filter(|d| pal.from.is_none() || compatible(d, &pal.from).is_some())
-                .filter(|d| q.is_empty() || d.title.to_lowercase().contains(&q) || d.category.to_lowercase().contains(&q) || d.description.to_lowercase().contains(&q) || d.id.contains(&q))
+                .filter(|d| {
+                    q.is_empty()
+                        || d.title.to_lowercase().contains(&q)
+                        || d.category.to_lowercase().contains(&q)
+                        || d.description.to_lowercase().contains(&q)
+                        || d.id.contains(&q)
+                })
                 .collect();
             if !q.is_empty() {
                 list.sort_by_key(|d| (!d.title.to_lowercase().starts_with(&q), d.title));
@@ -849,7 +939,11 @@ fn palette(ctx: &egui::Context, doc: &mut BpDoc, g: &mut GraphUi, shared: &mut S
         if let Some((pin, out, _)) = &pal.from
             && let Some(target) = compatible(def, &pal.from)
         {
-            let res = if *out { doc.bp.connect(pin.clone(), PinRef::new(id, target)) } else { doc.bp.connect(PinRef::new(id, target), pin.clone()) };
+            let res = if *out {
+                doc.bp.connect(pin.clone(), PinRef::new(id, target))
+            } else {
+                doc.bp.connect(PinRef::new(id, target), pin.clone())
+            };
             if let Err(e) = res {
                 shared.toast(LogLevel::Warn, e.to_string());
             }
@@ -866,7 +960,10 @@ fn palette(ctx: &egui::Context, doc: &mut BpDoc, g: &mut GraphUi, shared: &mut S
         close = true;
     }
     let fresh = ctx.cumulative_frame_nr() == g.opened_frame;
-    if close || ctx.input(|i| i.key_pressed(egui::Key::Escape)) || (!fresh && ctx.input(|i| i.pointer.any_pressed()) && !pointer_in(ctx, area.response.rect)) {
+    if close
+        || ctx.input(|i| i.key_pressed(egui::Key::Escape))
+        || (!fresh && ctx.input(|i| i.pointer.any_pressed()) && !pointer_in(ctx, area.response.rect))
+    {
         g.palette = None;
     }
 }
@@ -946,7 +1043,10 @@ fn literal_editor(ctx: &egui::Context, doc: &mut BpDoc, g: &mut GraphUi, files: 
         doc.touched = true;
     }
     let fresh = ctx.cumulative_frame_nr() == g.opened_frame;
-    if close || ctx.input(|i| i.key_pressed(egui::Key::Escape) || i.key_pressed(egui::Key::Enter)) || (!fresh && ctx.input(|i| i.pointer.any_pressed()) && !pointer_in(ctx, area.response.rect)) {
+    if close
+        || ctx.input(|i| i.key_pressed(egui::Key::Escape) || i.key_pressed(egui::Key::Enter))
+        || (!fresh && ctx.input(|i| i.pointer.any_pressed()) && !pointer_in(ctx, area.response.rect))
+    {
         g.literal = None;
     }
 }
@@ -1000,7 +1100,9 @@ pub fn side_panel(ui: &mut egui::Ui, p: &mut OpenProject, shared: &mut Shared) {
                         doc.touched = true;
                     }
                     egui::ComboBox::from_id_salt(("vty", i)).selected_text(v.ty.name()).width(76.0).show_ui(ui, |ui| {
-                        for t in [VType::Number, VType::Bool, VType::String, VType::Vec2, VType::Color, VType::Object, VType::Array, VType::Any] {
+                        for t in
+                            [VType::Number, VType::Bool, VType::String, VType::Vec2, VType::Color, VType::Object, VType::Array, VType::Any]
+                        {
                             if ui.selectable_value(&mut v.ty, t, t.name()).changed() {
                                 v.default = t.default_value();
                                 doc.touched = true;
@@ -1022,7 +1124,11 @@ pub fn side_panel(ui: &mut egui::Ui, p: &mut OpenProject, shared: &mut Shared) {
                     }
                 });
                 ui.horizontal(|ui| {
-                    if ui.checkbox(&mut v.exposed, RichText::new("exposed").small()).on_hover_text("Editable per node in the Inspector").changed() {
+                    if ui
+                        .checkbox(&mut v.exposed, RichText::new("exposed").small())
+                        .on_hover_text("Editable per node in the Inspector")
+                        .changed()
+                    {
                         doc.touched = true;
                     }
                     if ui.small_button("Get").clicked() {
@@ -1104,20 +1210,23 @@ pub fn side_panel(ui: &mut egui::Ui, p: &mut OpenProject, shared: &mut Shared) {
         ui.add(egui::TextEdit::singleline(&mut p.graph_ui.library_search).hint_text("🔍 search").desired_width(f32::INFINITY));
         let q = p.graph_ui.library_search.to_lowercase();
         for cat in defs::categories() {
-            let items: Vec<&NodeDef> = defs::LIBRARY.iter().filter(|d| d.category == cat && (q.is_empty() || d.title.to_lowercase().contains(&q))).collect();
+            let items: Vec<&NodeDef> =
+                defs::LIBRARY.iter().filter(|d| d.category == cat && (q.is_empty() || d.title.to_lowercase().contains(&q))).collect();
             if items.is_empty() {
                 continue;
             }
-            egui::CollapsingHeader::new(RichText::new(format!("{cat} ({})", items.len())).color(theme::category_color(cat))).default_open(!q.is_empty()).show(ui, |ui| {
-                for d in items {
-                    if ui.add(egui::Button::new(d.title).frame(false)).on_hover_text(d.description).clicked() {
-                        let center = vec2(240.0, 200.0) - doc.view.pan / doc.view.zoom;
-                        let id = doc.bp.add_node(d.id, center);
-                        doc.selection = BTreeSet::from([id]);
-                        doc.touched = true;
+            egui::CollapsingHeader::new(RichText::new(format!("{cat} ({})", items.len())).color(theme::category_color(cat)))
+                .default_open(!q.is_empty())
+                .show(ui, |ui| {
+                    for d in items {
+                        if ui.add(egui::Button::new(d.title).frame(false)).on_hover_text(d.description).clicked() {
+                            let center = vec2(240.0, 200.0) - doc.view.pan / doc.view.zoom;
+                            let id = doc.bp.add_node(d.id, center);
+                            doc.selection = BTreeSet::from([id]);
+                            doc.touched = true;
+                        }
                     }
-                }
-            });
+                });
         }
     });
 }
@@ -1127,13 +1236,19 @@ pub fn bytecode_window(ctx: &egui::Context, p: &mut OpenProject) {
         return;
     }
     let mut open = true;
-    let text = p.active_bp.and_then(|i| p.blueprints.get(i)).map(|d| {
-        if d.disassembly.is_empty() { "; does not compile - see Problems".to_owned() } else { d.disassembly.clone() }
-    });
+    let text = p
+        .active_bp
+        .and_then(|i| p.blueprints.get(i))
+        .map(|d| if d.disassembly.is_empty() { "; does not compile - see Problems".to_owned() } else { d.disassembly.clone() });
     egui::Window::new("🔬 Blueprint bytecode").open(&mut open).default_size([520.0, 480.0]).show(ctx, |ui| {
-        ui.label(RichText::new("Register VM bytecode (12-byte instructions) produced by the blueprint compiler.").small().color(theme::TEXT_DIM));
+        ui.label(
+            RichText::new("Register VM bytecode (12-byte instructions) produced by the blueprint compiler.").small().color(theme::TEXT_DIM),
+        );
         egui::ScrollArea::vertical().show(ui, |ui| {
-            ui.add(egui::Label::new(RichText::new(text.unwrap_or_else(|| "; no blueprint open".into())).monospace()).wrap_mode(egui::TextWrapMode::Extend));
+            ui.add(
+                egui::Label::new(RichText::new(text.unwrap_or_else(|| "; no blueprint open".into())).monospace())
+                    .wrap_mode(egui::TextWrapMode::Extend),
+            );
         });
     });
     if !open {

@@ -20,7 +20,7 @@ pub mod vm;
 
 pub use compiler::{CompileError, Program, compile};
 pub use defs::{EventKind, LIBRARY, NodeDef, PinKind};
-pub use graph::{BpNode, BpNodeId, Blueprint, Link, LinkError, PinRef, VarDef};
+pub use graph::{Blueprint, BpNode, BpNodeId, Link, LinkError, PinRef, VarDef};
 pub use vm::{ExecCtx, Host, Instance, NullHost, RuntimeError};
 
 #[cfg(test)]

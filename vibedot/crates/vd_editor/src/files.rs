@@ -169,34 +169,41 @@ fn dir_ui(ui: &mut egui::Ui, p: &mut OpenProject, shared: &mut Shared, dir: &Dir
 }
 
 pub fn new_file_dialog(ctx: &egui::Context, p: &mut OpenProject, shared: &mut Shared) {
-    let Some(d) = &mut p.dialogs.new_file else { return };
+    let Some(d) = &mut p.dialogs.new_file else {
+        return;
+    };
     let mut open = true;
     let mut create = false;
     let (title, ext) = match d.kind {
         NewKind::Scene => ("🎬  New scene", "vscn"),
         NewKind::Blueprint => ("🔷  New blueprint", "vbp"),
     };
-    egui::Window::new(title).open(&mut open).collapsible(false).resizable(false).anchor(egui::Align2::CENTER_CENTER, egui::Vec2::ZERO).show(ctx, |ui| {
-        egui::Grid::new("nf").num_columns(2).spacing([10.0, 8.0]).show(ui, |ui| {
-            ui.label("Folder");
-            ui.text_edit_singleline(&mut d.folder);
-            ui.end_row();
-            ui.label("Name");
-            let r = ui.text_edit_singleline(&mut d.name);
-            if !d.focus {
-                r.request_focus();
-                d.focus = true;
-            }
-            if r.lost_focus() && ui.input(|i| i.key_pressed(egui::Key::Enter)) {
+    egui::Window::new(title)
+        .open(&mut open)
+        .collapsible(false)
+        .resizable(false)
+        .anchor(egui::Align2::CENTER_CENTER, egui::Vec2::ZERO)
+        .show(ctx, |ui| {
+            egui::Grid::new("nf").num_columns(2).spacing([10.0, 8.0]).show(ui, |ui| {
+                ui.label("Folder");
+                ui.text_edit_singleline(&mut d.folder);
+                ui.end_row();
+                ui.label("Name");
+                let r = ui.text_edit_singleline(&mut d.name);
+                if !d.focus {
+                    r.request_focus();
+                    d.focus = true;
+                }
+                if r.lost_focus() && ui.input(|i| i.key_pressed(egui::Key::Enter)) {
+                    create = true;
+                }
+                ui.end_row();
+            });
+            ui.label(RichText::new(format!("» {}/{}.{ext}", d.folder.trim_matches('/'), d.name)).small().color(theme::TEXT_DIM));
+            if theme::accent_button(ui, "Create", theme::ACCENT).clicked() {
                 create = true;
             }
-            ui.end_row();
         });
-        ui.label(RichText::new(format!("» {}/{}.{ext}", d.folder.trim_matches('/'), d.name)).small().color(theme::TEXT_DIM));
-        if theme::accent_button(ui, "Create", theme::ACCENT).clicked() {
-            create = true;
-        }
-    });
     if create {
         let name = d.name.trim().trim_end_matches(&format!(".{ext}")).to_owned();
         let path = format!("{}/{}.{ext}", d.folder.trim_matches('/'), name);

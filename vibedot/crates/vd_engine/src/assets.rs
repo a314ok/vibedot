@@ -317,10 +317,8 @@ mod tests {
 
     #[test]
     fn pack_roundtrip_and_corruption() {
-        let files = vec![
-            ("scenes/main.vscn".to_owned(), b"{\"scene\":1}".to_vec()),
-            ("res://icon.png".to_owned(), vec![0u8, 1, 2, 3, 255]),
-        ];
+        let files =
+            vec![("scenes/main.vscn".to_owned(), b"{\"scene\":1}".to_vec()), ("res://icon.png".to_owned(), vec![0u8, 1, 2, 3, 255])];
         let bytes = write_pack(&files);
         let pack = PackAssets::from_bytes(bytes.clone()).unwrap();
         pack.verify().unwrap();

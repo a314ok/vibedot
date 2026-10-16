@@ -40,9 +40,10 @@ fn check(dir: &Path) -> usize {
     for f in vd_engine::AssetSource::list(&assets) {
         let full = dir.join(&f);
         if f.ends_with(".vbp") {
-            match vd_blueprint::Blueprint::load(&full).map_err(|e| vec![e.to_string()]).and_then(|bp| {
-                vd_blueprint::compile(&bp).map_err(|errs| errs.iter().map(ToString::to_string).collect())
-            }) {
+            match vd_blueprint::Blueprint::load(&full)
+                .map_err(|e| vec![e.to_string()])
+                .and_then(|bp| vd_blueprint::compile(&bp).map_err(|errs| errs.iter().map(ToString::to_string).collect()))
+            {
                 Ok(_) => println!("  ✔ {f}"),
                 Err(errs) => {
                     problems += errs.len();
@@ -70,7 +71,8 @@ fn main() {
     match args.first().map(String::as_str) {
         Some("new") => {
             let dir = args.get(1).map(PathBuf::from).unwrap_or_else(|| fail("usage: vibedot new <dir> [--name N] [--template neon|empty]"));
-            let name = flag(&args, "--name").unwrap_or_else(|| dir.file_name().map(|n| n.to_string_lossy().into_owned()).unwrap_or_else(|| "My Game".into()));
+            let name = flag(&args, "--name")
+                .unwrap_or_else(|| dir.file_name().map(|n| n.to_string_lossy().into_owned()).unwrap_or_else(|| "My Game".into()));
             let template = match flag(&args, "--template").as_deref() {
                 Some("empty") => manager::Template::Empty,
                 _ => manager::Template::NeonDrift,
@@ -80,7 +82,8 @@ fn main() {
         }
         Some("run") => {
             let dir = args.get(1).cloned().unwrap_or_else(|| ".".into());
-            let player = export::find_player(flag(&args, "--player").as_deref().map(Path::new), export::Platform::current()).unwrap_or_else(|e| fail(e));
+            let player = export::find_player(flag(&args, "--player").as_deref().map(Path::new), export::Platform::current())
+                .unwrap_or_else(|e| fail(e));
             let status = std::process::Command::new(player).arg(dir).status().unwrap_or_else(|e| fail(e));
             std::process::exit(status.code().unwrap_or(1));
         }
@@ -90,9 +93,12 @@ fn main() {
             println!("Packed {n} bytes into {out}");
         }
         Some("export") => {
-            let dir = args.get(1).map(PathBuf::from).unwrap_or_else(|| fail("usage: vibedot export <project-dir> [--out dist] [--platform p]"));
+            let dir =
+                args.get(1).map(PathBuf::from).unwrap_or_else(|| fail("usage: vibedot export <project-dir> [--out dist] [--platform p]"));
             let out = flag(&args, "--out").map_or_else(|| PathBuf::from("dist"), PathBuf::from);
-            let platform = flag(&args, "--platform").map_or(export::Platform::current(), |p| export::Platform::parse(&p).unwrap_or_else(|| fail(format!("unknown platform {p}"))));
+            let platform = flag(&args, "--platform").map_or(export::Platform::current(), |p| {
+                export::Platform::parse(&p).unwrap_or_else(|| fail(format!("unknown platform {p}")))
+            });
             let player = flag(&args, "--player").map(PathBuf::from);
             let problems = check(&dir);
             if problems > 0 {
@@ -110,7 +116,10 @@ fn main() {
             println!("All good.");
         }
         Some("--help") | Some("-h") | Some("help") => {
-            println!("{}", include_str!("main.rs").lines().skip(2).take(9).map(|l| l.trim_start_matches("//! ")).collect::<Vec<_>>().join("\n"));
+            println!(
+                "{}",
+                include_str!("main.rs").lines().skip(2).take(9).map(|l| l.trim_start_matches("//! ")).collect::<Vec<_>>().join("\n")
+            );
         }
         other => {
             let open = other.map(PathBuf::from).filter(|p| p.join(vd_engine::PROJECT_FILE).is_file());

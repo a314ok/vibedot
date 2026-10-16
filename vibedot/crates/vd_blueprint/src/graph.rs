@@ -214,8 +214,7 @@ impl Blueprint {
             return Err(LinkError::SelfLink);
         }
         // Accept either drag direction: normalize to (output → input).
-        let (from, to) = if self.pin_kind(a.node, &a.pin, true).is_some() && self.pin_kind(b.node, &b.pin, false).is_some()
-        {
+        let (from, to) = if self.pin_kind(a.node, &a.pin, true).is_some() && self.pin_kind(b.node, &b.pin, false).is_some() {
             (a, b)
         } else if self.pin_kind(b.node, &b.pin, true).is_some() && self.pin_kind(a.node, &a.pin, false).is_some() {
             (b, a)
@@ -298,7 +297,9 @@ pub fn estimated_size(def: &crate::defs::NodeDef) -> Vec2 {
 
 /// Like [`estimated_size`] for a node whose title shows a literal.
 pub fn estimated_node_size(node: &BpNode) -> Vec2 {
-    let Some(def) = node.def() else { return Vec2::new(220.0, 100.0) };
+    let Some(def) = node.def() else {
+        return Vec2::new(220.0, 100.0);
+    };
     let extra = def.title_pin.map_or(0, |p| node.literal(p).to_string().len() + 5);
     estimated_size_titled(def, def.title.len() + extra)
 }
@@ -325,7 +326,9 @@ impl Blueprint {
         let mut preds: Vec<Vec<usize>> = vec![Vec::new(); n];
         let mut adj: Vec<Vec<usize>> = vec![Vec::new(); n];
         for l in &self.links {
-            let (Some(&a), Some(&b)) = (index.get(&l.from.node), index.get(&l.to.node)) else { continue };
+            let (Some(&a), Some(&b)) = (index.get(&l.from.node), index.get(&l.to.node)) else {
+                continue;
+            };
             preds[b].push(a);
             adj[a].push(b);
             adj[b].push(a);

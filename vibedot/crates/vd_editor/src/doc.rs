@@ -8,7 +8,7 @@
 use std::collections::BTreeSet;
 use std::path::Path;
 
-use vd_blueprint::{BpNodeId, Blueprint, CompileError};
+use vd_blueprint::{Blueprint, BpNodeId, CompileError};
 use vd_core::Vec2;
 use vd_scene::{NodeId, SceneFile, SceneTree};
 
@@ -160,7 +160,6 @@ impl SceneDoc {
         self.dirty = false;
         Ok(())
     }
-
 }
 
 /// Blueprint editor view state.

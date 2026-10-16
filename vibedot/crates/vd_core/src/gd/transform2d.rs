@@ -121,8 +121,7 @@ impl Transform2D {
 
     pub fn set_skew(&mut self, angle: Real) {
         let det = self.determinant();
-        self.columns[1] =
-            self.columns[0].rotated(PI as Real * 0.5 + angle).normalized() * math::sign(det) * self.columns[1].length();
+        self.columns[1] = self.columns[0].rotated(PI as Real * 0.5 + angle).normalized() * math::sign(det) * self.columns[1].length();
     }
 
     pub fn get_scale(&self) -> Size2 {

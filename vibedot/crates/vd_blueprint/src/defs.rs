@@ -224,7 +224,6 @@ pub static LIBRARY: &[NodeDef] = &[
         Event(E::Timeout), in [cfg("timer", "")], out [THEN, out("timer", T::Object)], title_pin = "timer"),
     def!("event.custom", "On Event / Method", "Events", "Runs when a custom event (`Emit Event`) or a connected signal calls this method name.",
         Event(E::Custom), in [cfg("name", "my_event")], out [THEN, out("payload", T::Any), out("sender", T::Object), out("args", T::Array)], title_pin = "name"),
-
     // ------------------------------------------------------------------ flow
     def!("flow.branch", "Branch", "Flow", "If / else.",
         Flow(F::Branch), in [EXEC_IN, boolean("condition", true)], out [exec("true"), exec("false")]),
@@ -244,7 +243,6 @@ pub static LIBRARY: &[NodeDef] = &[
         Flow(F::FlipFlop), in [EXEC_IN], out [exec("a"), exec("b"), out("is_a", T::Bool)]),
     def!("flow.delay", "Delay", "Flow", "Waits `seconds` then continues from `completed` (latent).",
         Flow(F::Delay), in [EXEC_IN, num("seconds", 1.0)], out [exec("completed")]),
-
     // ------------------------------------------------------------------ variables
     def!("var.get", "Get Variable", "Variables", "Reads a blueprint variable.",
         Var(VarKind::Get), in [cfg("var", "")], out [out("value", T::Any)], title_pin = "var"),
@@ -252,14 +250,12 @@ pub static LIBRARY: &[NodeDef] = &[
         Var(VarKind::Set), in [EXEC_IN, cfg("var", ""), any("value")], out [THEN, out("value", T::Any)], title_pin = "var"),
     def!("var.add", "Add To Variable", "Variables", "variable += amount (numbers, vectors) or appends (strings).",
         Var(VarKind::Add), in [EXEC_IN, cfg("var", ""), num("amount", 1.0)], out [THEN, out("value", T::Any)], title_pin = "var"),
-
     // ------------------------------------------------------------------ literals
     def!("lit.number", "Number", "Literals", "A constant number.", Pure(Op::Identity), in [num("value", 0.0)], out [out("out", T::Number)]),
     def!("lit.bool", "Boolean", "Literals", "A constant boolean.", Pure(Op::Identity), in [boolean("value", true)], out [out("out", T::Bool)]),
     def!("lit.string", "Text", "Literals", "A constant string.", Pure(Op::Identity), in [string("value", "")], out [out("out", T::String)]),
     def!("lit.vec2", "Vector2", "Literals", "A constant 2D vector.", Pure(Op::Identity), in [v2("value", 0.0, 0.0)], out [out("out", T::Vec2)]),
     def!("lit.color", "Color", "Literals", "A constant color.", Pure(Op::Identity), in [color("value", 1.0, 1.0, 1.0, 1.0)], out [out("out", T::Color)]),
-
     // ------------------------------------------------------------------ math
     def!("math.add", "Add", "Math", "a + b (numbers, vectors, colors; joins strings).", Pure(Op::Add), in [anynum("a", 0.0), anynum("b", 0.0)], out [out("result", T::Any)]),
     def!("math.sub", "Subtract", "Math", "a - b", Pure(Op::Sub), in [anynum("a", 0.0), anynum("b", 0.0)], out [out("result", T::Any)]),
@@ -289,7 +285,6 @@ pub static LIBRARY: &[NodeDef] = &[
     def!("math.random_int", "Random Integer", "Math", "Random integer in [min, max] inclusive.", Pure(Op::RandomInt), in [num("min", 0.0), num("max", 10.0)], out [out("result", T::Number)]),
     def!("math.chance", "Chance", "Math", "True with the given probability (0..1).", Pure(Op::Chance), in [num("probability", 0.5)], out [out("result", T::Bool)]),
     def!("math.time", "Get Time", "Math", "Seconds since the game started.", Pure(Op::Time), in [], out [out("seconds", T::Number)]),
-
     // ------------------------------------------------------------------ vectors
     def!("vec.make", "Make Vector2", "Vector", "Builds a vector from x and y.", Pure(Op::MakeVec), in [num("x", 0.0), num("y", 0.0)], out [out("vector", T::Vec2)]),
     def!("vec.break", "Break Vector2", "Vector", "Splits a vector into x and y.", Pure(Op::BreakVec), in [v2("vector", 0.0, 0.0)], out [out("x", T::Number), out("y", T::Number)]),
@@ -305,7 +300,6 @@ pub static LIBRARY: &[NodeDef] = &[
     def!("vec.clamp", "Clamp Vector", "Vector", "Clamps each component between min and max (Godot `Vector2.clamp`).", Pure(Op::ClampVec),
         in [v2("vector", 0.0, 0.0), v2("min", -100.0, -100.0), v2("max", 100.0, 100.0)], out [out("result", T::Vec2)]),
     def!("vec.random_in_circle", "Random In Circle", "Vector", "Random point inside a circle of `radius`.", Pure(Op::RandomInCircle), in [num("radius", 1.0)], out [out("point", T::Vec2)]),
-
     // ------------------------------------------------------------------ logic
     def!("cmp.gt", "Greater (>)", "Logic", "a > b", Pure(Op::Gt), in [num("a", 0.0), num("b", 0.0)], out [out("result", T::Bool)]),
     def!("cmp.ge", "Greater Or Equal (≥)", "Logic", "a ≥ b", Pure(Op::Ge), in [num("a", 0.0), num("b", 0.0)], out [out("result", T::Bool)]),
@@ -317,24 +311,20 @@ pub static LIBRARY: &[NodeDef] = &[
     def!("logic.or", "Or", "Logic", "a OR b", Pure(Op::Or), in [boolean("a", false), boolean("b", false)], out [out("result", T::Bool)]),
     def!("logic.not", "Not", "Logic", "NOT value", Pure(Op::Not), in [boolean("value", false)], out [out("result", T::Bool)]),
     def!("logic.select", "Select", "Logic", "Returns `a` if condition is true, otherwise `b`.", Pure(Op::Select), in [boolean("condition", true), any("a"), any("b")], out [out("result", T::Any)]),
-
     // ------------------------------------------------------------------ text
     def!("str.concat", "Join Text", "Text", "a + b as text.", Pure(Op::Concat), in [string("a", ""), string("b", "")], out [out("result", T::String)]),
     def!("str.format", "Format Text", "Text", "Replaces {0}, {1}, {2} in the template.", Pure(Op::Format),
         in [string("template", "Score: {0}"), any("0"), any("1"), any("2")], out [out("result", T::String)]),
     def!("str.to_string", "To Text", "Text", "Converts any value to text.", Pure(Op::ToText), in [any("value")], out [out("text", T::String)]),
-
     // ------------------------------------------------------------------ color
     def!("color.make", "Make Color", "Color", "Color from linear RGBA (values > 1 glow).", Pure(Op::MakeColor),
         in [num("r", 1.0), num("g", 1.0), num("b", 1.0), num("a", 1.0)], out [out("color", T::Color)]),
     def!("color.hsv", "Color From HSV", "Color", "Hue, saturation, value in 0..1.", Pure(Op::Hsv),
         in [num("hue", 0.0), num("saturation", 1.0), num("value", 1.0), num("alpha", 1.0)], out [out("color", T::Color)]),
-
     // ------------------------------------------------------------------ arrays
     def!("array.length", "Array Length", "Array", "Number of elements.", Pure(Op::ArrayLen), in [array("array")], out [out("length", T::Number)]),
     def!("array.get", "Array Get", "Array", "Element at index (null if out of range).", Pure(Op::ArrayGet), in [array("array"), num("index", 0.0)], out [out("element", T::Any)]),
     def!("array.random", "Random Element", "Array", "A random element (null if empty).", Pure(Op::ArrayRandom), in [array("array")], out [out("element", T::Any)]),
-
     // ------------------------------------------------------------------ nodes (pure)
     def!("node.self", "Self", "Node", "The node this blueprint is attached to.", Pure(Op::SelfNode), in [], out [out("self", T::Object)]),
     def!("node.get_node", "Get Node", "Node", "Finds a node by path relative to `from` (\"../Player\", \"%Score\").", Pure(Op::GetNode),
@@ -352,7 +342,6 @@ pub static LIBRARY: &[NodeDef] = &[
         in [node("a"), node_nil("b")], out [out("distance", T::Number)]),
     def!("node.get_property", "Get Property", "Node", "Reads any property by name (e.g. \"text\", \"energy\").", Pure(Op::GetProperty),
         in [node("node"), string("property", "position")], out [out("value", T::Any)]),
-
     // ------------------------------------------------------------------ nodes (exec)
     def!("node.set_position", "Set Position", "Transform", "Sets the global position.", Exec(Op::SetPosition), in [EXEC_IN, node("node"), v2("position", 0.0, 0.0)], out [THEN]),
     def!("node.translate", "Move By", "Transform", "Moves a node by an offset.", Exec(Op::Translate), in [EXEC_IN, node("node"), v2("offset", 0.0, 0.0)], out [THEN]),
@@ -369,7 +358,6 @@ pub static LIBRARY: &[NodeDef] = &[
     def!("node.destroy", "Destroy", "Node", "Removes a node (and its children) at the end of the frame.", Exec(Op::QueueFree), in [EXEC_IN, node("node")], out [THEN]),
     def!("node.spawn", "Spawn Scene", "Node", "Instantiates a scene file at a position.", Exec(Op::Spawn),
         in [EXEC_IN, string("scene", "scenes/bullet.vscn"), v2("position", 0.0, 0.0), node_nil("parent")], out [THEN, out("node", T::Object)]),
-
     def!("node.get_child", "Get Child", "Node", "Child at index (negative counts from the end).", Pure(Op::GetChild),
         in [node("node"), num("index", 0.0)], out [out("child", T::Object)]),
     def!("node.child_count", "Get Child Count", "Node", "Number of children.", Pure(Op::ChildCount), in [node("node")], out [out("count", T::Number)]),
@@ -377,7 +365,6 @@ pub static LIBRARY: &[NodeDef] = &[
         in [node("node"), string("pattern", "Enemy*"), boolean("recursive", true)], out [out("child", T::Object)]),
     def!("node.reparent", "Reparent", "Node", "Moves a node under a new parent, keeping its global transform.", Exec(Op::Reparent),
         in [EXEC_IN, node("node"), node_nil("new_parent")], out [THEN]),
-
     // ------------------------------------------------------------------ signals
     def!("signal.connect", "Connect Signal", "Signals", "Connects `source`'s signal to a method (an `On Event / Method` handler) on `target`.", Exec(Op::ConnectSignal),
         in [EXEC_IN, node("source"), string("signal", "timeout"), node("target"), string("method", "_on_timeout"), boolean("one_shot", false)], out [THEN]),
@@ -387,13 +374,11 @@ pub static LIBRARY: &[NodeDef] = &[
         in [EXEC_IN, node("node"), string("signal", "hit"), any("arg0"), any("arg1")], out [THEN]),
     def!("signal.is_connected", "Is Connected", "Signals", "True if the connection exists.", Pure(Op::IsConnected),
         in [node("source"), string("signal", "timeout"), node("target"), string("method", "_on_timeout")], out [out("connected", T::Bool)]),
-
     // ------------------------------------------------------------------ physics
     def!("physics.set_velocity", "Set Velocity", "Physics", "Sets a body's velocity (pixels / second).", Exec(Op::SetVelocity), in [EXEC_IN, node("node"), v2("velocity", 0.0, 0.0)], out [THEN]),
     def!("physics.get_velocity", "Get Velocity", "Physics", "A body's velocity.", Pure(Op::GetVelocity), in [node("node")], out [out("velocity", T::Vec2)]),
     def!("physics.impulse", "Apply Impulse", "Physics", "Instant push, scaled by 1/mass.", Exec(Op::ApplyImpulse), in [EXEC_IN, node("node"), v2("impulse", 0.0, -300.0)], out [THEN]),
     def!("physics.on_floor", "Is On Floor", "Physics", "True if the body is standing on something.", Pure(Op::IsOnFloor), in [node("node")], out [out("result", T::Bool)]),
-
     // ------------------------------------------------------------------ input
     def!("input.pressed", "Is Action Pressed", "Input", "True while an action is held.", Pure(Op::ActionPressed), in [string("action", "ui_right")], out [out("pressed", T::Bool)]),
     def!("input.just_pressed", "Is Action Just Pressed", "Input", "True only in the frame the action was pressed.", Pure(Op::ActionJustPressed), in [string("action", "jump")], out [out("pressed", T::Bool)]),
@@ -401,7 +386,6 @@ pub static LIBRARY: &[NodeDef] = &[
     def!("input.vector", "Get Input Vector", "Input", "Normalized direction from four actions.", Pure(Op::InputVector),
         in [string("left", "ui_left"), string("right", "ui_right"), string("up", "ui_up"), string("down", "ui_down")], out [out("vector", T::Vec2)]),
     def!("input.mouse", "Mouse Position", "Input", "Mouse position in world coordinates.", Pure(Op::MousePosition), in [], out [out("position", T::Vec2)]),
-
     // ------------------------------------------------------------------ game / fx
     def!("debug.print", "Print", "Game", "Writes a message to the Output panel.", Exec(Op::Print), in [EXEC_IN, any("value")], out [THEN]),
     def!("game.emit", "Emit Event", "Game", "Sends a custom event to `target` (empty = every blueprint).", Exec(Op::EmitEvent),

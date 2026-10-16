@@ -294,17 +294,11 @@ impl Vector2 {
     }
 
     pub fn bezier_interpolate(self, c1: Vector2, c2: Vector2, end: Vector2, t: Real) -> Self {
-        Self::new(
-            math::bezier_interpolate(self.x, c1.x, c2.x, end.x, t),
-            math::bezier_interpolate(self.y, c1.y, c2.y, end.y, t),
-        )
+        Self::new(math::bezier_interpolate(self.x, c1.x, c2.x, end.x, t), math::bezier_interpolate(self.y, c1.y, c2.y, end.y, t))
     }
 
     pub fn bezier_derivative(self, c1: Vector2, c2: Vector2, end: Vector2, t: Real) -> Self {
-        Self::new(
-            math::bezier_derivative(self.x, c1.x, c2.x, end.x, t),
-            math::bezier_derivative(self.y, c1.y, c2.y, end.y, t),
-        )
+        Self::new(math::bezier_derivative(self.x, c1.x, c2.x, end.x, t), math::bezier_derivative(self.y, c1.y, c2.y, end.y, t))
     }
 
     pub fn direction_to(self, to: Vector2) -> Self {

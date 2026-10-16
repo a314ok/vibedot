@@ -59,9 +59,11 @@ fn vector2_interpolation_methods() {
     assert!(approx(vector1.slerp(vector2, 0.5).length(), 4.31959610746631919));
     assert!(approx(vector1.angle_to(vector1.slerp(vector2, 0.5)) * 2.0, vector1.angle_to(vector2)));
     assert_eq!(vector1.cubic_interpolate(vector2, Vector2::ZERO, v(7.0, 7.0), 0.5), v(2.375, 3.5));
-    assert!(vector1
-        .cubic_interpolate(vector2, Vector2::ZERO, v(7.0, 7.0), 1.0 / 3.0)
-        .is_equal_approx(v(1.851851940155029297, 2.962963104248046875)));
+    assert!(
+        vector1
+            .cubic_interpolate(vector2, Vector2::ZERO, v(7.0, 7.0), 1.0 / 3.0)
+            .is_equal_approx(v(1.851851940155029297, 2.962963104248046875))
+    );
     assert_eq!(v(1.0, 0.0).move_toward(v(10.0, 0.0), 3.0), v(4.0, 0.0));
 }
 
@@ -281,30 +283,51 @@ fn rect2_intersection_with_transformed_rect() {
     let s2 = SQRT2 as Real;
     // Translated.
     let xform = Transform2D::from_rotation(0.0, v(100.0, 100.0));
-    assert!(rect.intersection_transformed(&xform, &Rect2::new(0.0, 100.0, 100.0, 100.0)).is_equal_approx(&Rect2::new(100.0, 200.0, 100.0, 100.0)));
-    assert!(rect.intersection_transformed(&xform, &Rect2::new(250.0, 150.0, 100.0, 100.0)).is_equal_approx(&Rect2::new(350.0, 250.0, 50.0, 100.0)));
+    assert!(
+        rect.intersection_transformed(&xform, &Rect2::new(0.0, 100.0, 100.0, 100.0))
+            .is_equal_approx(&Rect2::new(100.0, 200.0, 100.0, 100.0))
+    );
+    assert!(
+        rect.intersection_transformed(&xform, &Rect2::new(250.0, 150.0, 100.0, 100.0))
+            .is_equal_approx(&Rect2::new(350.0, 250.0, 50.0, 100.0))
+    );
     assert!(rect.intersection_transformed(&xform, &Rect2::new(350.0, 350.0, 100.0, 100.0)).is_equal_approx(&Rect2::default()));
     assert!(rect.intersection_transformed(&xform, &Rect2::new(-150.0, -50.0, 500.0, 400.0)).is_equal_approx(&rect));
-    assert!(rect.intersection_transformed(&xform, &Rect2::new(0.0, -150.0, 100.0, 500.0)).is_equal_approx(&Rect2::new(100.0, 100.0, 100.0, 300.0)));
+    assert!(
+        rect.intersection_transformed(&xform, &Rect2::new(0.0, -150.0, 100.0, 500.0))
+            .is_equal_approx(&Rect2::new(100.0, 100.0, 100.0, 300.0))
+    );
     // Scaled.
     let xform = Transform2D::from_rotation_scale_skew(0.0, v(2.0, 2.0), 0.0, Vector2::ZERO);
-    assert!(rect.intersection_transformed(&xform, &Rect2::new(50.0, 75.0, 100.0, 100.0)).is_equal_approx(&Rect2::new(100.0, 150.0, 200.0, 200.0)));
-    assert!(rect.intersection_transformed(&xform, &Rect2::new(175.0, 150.0, 100.0, 100.0)).is_equal_approx(&Rect2::new(350.0, 300.0, 50.0, 100.0)));
+    assert!(
+        rect.intersection_transformed(&xform, &Rect2::new(50.0, 75.0, 100.0, 100.0))
+            .is_equal_approx(&Rect2::new(100.0, 150.0, 200.0, 200.0))
+    );
+    assert!(
+        rect.intersection_transformed(&xform, &Rect2::new(175.0, 150.0, 100.0, 100.0))
+            .is_equal_approx(&Rect2::new(350.0, 300.0, 50.0, 100.0))
+    );
     assert!(rect.intersection_transformed(&xform, &Rect2::new(250.0, 220.0, 100.0, 100.0)).is_equal_approx(&Rect2::default()));
     assert!(rect.intersection_transformed(&xform, &Rect2::new(-100.0, -50.0, 500.0, 400.0)).is_equal_approx(&rect));
     // Rotated.
     let xform = Transform2D::from_rotation((math::PI / 4.0) as Real, Vector2::ZERO);
     let r = rect.intersection_transformed(&xform, &Rect2::new(100.0, 50.0, 20.0, 20.0));
     assert!(r.is_equal_approx(&Rect2::new(15.0 * s2, 75.0 * s2, 20.0 * s2, 20.0 * s2)), "{r}");
-    assert!(rect
-        .intersection_transformed(&xform, &Rect2::new(80.0, 90.0, 20.0, 20.0))
-        .is_equal_approx(&Rect2::new(0.0, 90.0 * s2, 5.0 * s2, 10.0 * s2)));
+    assert!(rect.intersection_transformed(&xform, &Rect2::new(80.0, 90.0, 20.0, 20.0)).is_equal_approx(&Rect2::new(
+        0.0,
+        90.0 * s2,
+        5.0 * s2,
+        10.0 * s2
+    )));
     assert!(rect.intersection_transformed(&xform, &Rect2::new(575.0, -50.0, 100.0, 100.0)).is_equal_approx(&Rect2::default()));
     assert!(rect.intersection_transformed(&xform, &Rect2::new(0.0, -250.0, 600.0, 600.0)).is_equal_approx(&rect));
     assert!(rect.intersection_transformed(&xform, &Rect2::new(0.0, -250.0, 1000.0, 1000.0)).is_equal_approx(&rect));
-    assert!(rect
-        .intersection_transformed(&xform, &Rect2::new(75.0, 25.0, 500.0, 10.0))
-        .is_equal_approx(&Rect2::new(100.0 - 35.0 * s2, 100.0, 300.0 + 10.0 * s2, 300.0)));
+    assert!(rect.intersection_transformed(&xform, &Rect2::new(75.0, 25.0, 500.0, 10.0)).is_equal_approx(&Rect2::new(
+        100.0 - 35.0 * s2,
+        100.0,
+        300.0 + 10.0 * s2,
+        300.0
+    )));
     let expected = Rect2::new(100.0 + 90.0 * s2, 100.0, 300.0 - 90.0 * s2, 300.0 - 90.0 * s2);
     for r in [
         Rect2::new(-50.0, -100.0, 600.0, 10.0),
@@ -317,17 +340,29 @@ fn rect2_intersection_with_transformed_rect() {
     }
     // Skewed.
     let xform = Transform2D::from_rotation_scale_skew(0.0, v(1.0, 1.0), (math::PI / 4.0) as Real, Vector2::ZERO);
-    assert!(rect
-        .intersection_transformed(&xform, &Rect2::new(300.0, 200.0, 100.0, 50.0))
-        .is_equal_approx(&Rect2::new(300.0 - 125.0 * s2, 100.0 * s2, 100.0 + 25.0 * s2, 25.0 * s2)));
-    assert!(rect
-        .intersection_transformed(&xform, &Rect2::new(550.0, 200.0, 100.0, 50.0))
-        .is_equal_approx(&Rect2::new(550.0 - 125.0 * s2, 150.0, -150.0 + 125.0 * s2, -150.0 + 125.0 * s2)));
+    assert!(rect.intersection_transformed(&xform, &Rect2::new(300.0, 200.0, 100.0, 50.0)).is_equal_approx(&Rect2::new(
+        300.0 - 125.0 * s2,
+        100.0 * s2,
+        100.0 + 25.0 * s2,
+        25.0 * s2
+    )));
+    assert!(rect.intersection_transformed(&xform, &Rect2::new(550.0, 200.0, 100.0, 50.0)).is_equal_approx(&Rect2::new(
+        550.0 - 125.0 * s2,
+        150.0,
+        -150.0 + 125.0 * s2,
+        -150.0 + 125.0 * s2
+    )));
     assert!(rect.intersection_transformed(&xform, &Rect2::new(810.0, 550.0, 100.0, 50.0)).is_equal_approx(&Rect2::default()));
     assert!(rect.intersection_transformed(&xform, &Rect2::new(0.0, 0.0, 2000.0, 1000.0)).is_equal_approx(&rect));
     assert!(rect.intersection_transformed(&xform, &Rect2::new(-3000.0, 0.0, 4000.0, 3000.0)).is_equal_approx(&rect));
-    assert!(rect.intersection_transformed(&xform, &Rect2::new(-150.0, 130.0, 600.0, 450.0)).is_equal_approx(&Rect2::new(0.0, 100.0, 350.0, 300.0)));
-    assert!(rect.intersection_transformed(&xform, &Rect2::new(450.0, 130.0, 600.0, 450.0)).is_equal_approx(&Rect2::new(50.0, 100.0, 350.0, 300.0)));
+    assert!(
+        rect.intersection_transformed(&xform, &Rect2::new(-150.0, 130.0, 600.0, 450.0))
+            .is_equal_approx(&Rect2::new(0.0, 100.0, 350.0, 300.0))
+    );
+    assert!(
+        rect.intersection_transformed(&xform, &Rect2::new(450.0, 130.0, 600.0, 450.0))
+            .is_equal_approx(&Rect2::new(50.0, 100.0, 350.0, 300.0))
+    );
 }
 
 #[test]

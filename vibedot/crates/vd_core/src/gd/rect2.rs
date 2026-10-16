@@ -32,9 +32,7 @@ impl Rect2 {
     }
 
     fn warn_negative(&self, other: Option<&Rect2>) {
-        if cfg!(debug_assertions)
-            && (self.size.x < 0.0 || self.size.y < 0.0 || other.is_some_and(|o| o.size.x < 0.0 || o.size.y < 0.0))
-        {
+        if cfg!(debug_assertions) && (self.size.x < 0.0 || self.size.y < 0.0 || other.is_some_and(|o| o.size.x < 0.0 || o.size.y < 0.0)) {
             log::error!("Rect2 size is negative, this is not supported. Use Rect2.abs() to get a Rect2 with a positive size.");
         }
     }
@@ -60,15 +58,9 @@ impl Rect2 {
         let p = self.position;
         let s = self.size;
         if include_borders {
-            !(p.x > r.position.x + r.size.x
-                || p.x + s.x < r.position.x
-                || p.y > r.position.y + r.size.y
-                || p.y + s.y < r.position.y)
+            !(p.x > r.position.x + r.size.x || p.x + s.x < r.position.x || p.y > r.position.y + r.size.y || p.y + s.y < r.position.y)
         } else {
-            !(p.x >= r.position.x + r.size.x
-                || p.x + s.x <= r.position.x
-                || p.y >= r.position.y + r.size.y
-                || p.y + s.y <= r.position.y)
+            !(p.x >= r.position.x + r.size.x || p.x + s.x <= r.position.x || p.y >= r.position.y + r.size.y || p.y + s.y <= r.position.y)
         }
     }
 
@@ -128,10 +120,7 @@ impl Rect2 {
 
     pub fn has_point(&self, p: Point2) -> bool {
         self.warn_negative(None);
-        !(p.x < self.position.x
-            || p.y < self.position.y
-            || p.x >= self.position.x + self.size.x
-            || p.y >= self.position.y + self.size.y)
+        !(p.x < self.position.x || p.y < self.position.y || p.x >= self.position.x + self.size.x || p.y >= self.position.y + self.size.y)
     }
 
     pub fn is_equal_approx(&self, r: &Rect2) -> bool {
@@ -317,8 +306,7 @@ impl Rect2 {
     pub fn intersection_transformed(&self, xform: &Transform2D, rect: &Rect2) -> Rect2 {
         self.warn_negative(Some(rect));
         let c = &xform.columns;
-        if (math::is_zero_approx(c[0].y) && math::is_zero_approx(c[1].x))
-            || (math::is_zero_approx(c[0].x) && math::is_zero_approx(c[1].y))
+        if (math::is_zero_approx(c[0].y) && math::is_zero_approx(c[1].x)) || (math::is_zero_approx(c[0].x) && math::is_zero_approx(c[1].y))
         {
             return self.intersection(&xform.xform_rect(rect));
         }
@@ -340,7 +328,9 @@ impl Rect2 {
             let another = 1 - axis;
             let is_min = edge < 2;
             intersected[axis] = if is_min { min[axis] } else { max[axis] };
-            let inside = |p: &Vector2, lim: Real| if is_min { p[axis] >= lim } else { p[axis] <= lim };
+            let inside = |p: &Vector2, lim: Real| {
+                if is_min { p[axis] >= lim } else { p[axis] <= lim }
+            };
             let mut output = Vec::with_capacity(8);
             let mut prev = *subject.last().expect("non-empty subject");
             let mut prev_in = inside(&prev, intersected[axis]);

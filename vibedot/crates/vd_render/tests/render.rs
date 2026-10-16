@@ -13,25 +13,40 @@ fn scene() -> DrawList {
     list.env.bloom = std::env::var("VD_NOBLOOM").is_err();
     list.env.chromatic_aberration = 1.0;
     // Floor.
-    let mut floor = QuadCmd::shape(Affine2::from_translation(vec2(0.0, 140.0)), vec2(600.0, 40.0), ShapeCode::RoundedRect, Color::from_hex("#3a3f5c").unwrap());
+    let mut floor = QuadCmd::shape(
+        Affine2::from_translation(vec2(0.0, 140.0)),
+        vec2(600.0, 40.0),
+        ShapeCode::RoundedRect,
+        Color::from_hex("#3a3f5c").unwrap(),
+    );
     floor.corner_radius = 10.0;
     list.quad(0, floor);
     // A glowing ring, circle, triangle.
-    let mut ring = QuadCmd::shape(Affine2::from_translation(vec2(-200.0, 0.0)), vec2(120.0, 120.0), ShapeCode::Ring, Color::rgb(0.2, 0.9, 1.0));
+    let mut ring =
+        QuadCmd::shape(Affine2::from_translation(vec2(-200.0, 0.0)), vec2(120.0, 120.0), ShapeCode::Ring, Color::rgb(0.2, 0.9, 1.0));
     ring.thickness = 10.0;
     ring.emission = 4.0;
     list.quad(1, ring);
-    list.quad(1, QuadCmd::shape(Affine2::from_translation(vec2(0.0, 0.0)), vec2(100.0, 100.0), ShapeCode::Circle, Color::rgb(1.0, 0.4, 0.2)));
     list.quad(
         1,
-        QuadCmd::shape(Affine2::from_scale_angle_translation(vec2(1.0, 1.0), 0.5, vec2(200.0, 0.0)), vec2(100.0, 80.0), ShapeCode::Triangle, Color::rgb(0.6, 1.0, 0.3)),
+        QuadCmd::shape(Affine2::from_translation(vec2(0.0, 0.0)), vec2(100.0, 100.0), ShapeCode::Circle, Color::rgb(1.0, 0.4, 0.2)),
+    );
+    list.quad(
+        1,
+        QuadCmd::shape(
+            Affine2::from_scale_angle_translation(vec2(1.0, 1.0), 0.5, vec2(200.0, 0.0)),
+            vec2(100.0, 80.0),
+            ShapeCode::Triangle,
+            Color::rgb(0.6, 1.0, 0.3),
+        ),
     );
     // Missing texture → checkerboard sprite.
     let mut spr = QuadCmd::shape(Affine2::from_translation(vec2(0.0, -120.0)), vec2(64.0, 64.0), ShapeCode::Sprite, Color::WHITE);
     spr.texture = StringName::new("missing.png");
     list.quad(2, spr);
     // Additive spark.
-    let mut spark = QuadCmd::shape(Affine2::from_translation(vec2(-200.0, -120.0)), vec2(40.0, 40.0), ShapeCode::Circle, Color::rgb(1.0, 0.8, 0.2));
+    let mut spark =
+        QuadCmd::shape(Affine2::from_translation(vec2(-200.0, -120.0)), vec2(40.0, 40.0), ShapeCode::Circle, Color::rgb(1.0, 0.8, 0.2));
     spark.blend = Blend::Additive;
     spark.softness = 12.0;
     spark.emission = 3.0;

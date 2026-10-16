@@ -14,7 +14,11 @@ use vd_core::{Color, VType, Variant, Vec2};
 pub enum PropHint {
     None,
     /// Numeric slider range.
-    Range { min: f32, max: f32, step: f32 },
+    Range {
+        min: f32,
+        max: f32,
+        step: f32,
+    },
     /// Angle stored in radians, edited in degrees.
     Angle,
     /// One of a fixed list of strings.

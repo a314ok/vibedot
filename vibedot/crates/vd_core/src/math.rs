@@ -91,13 +91,7 @@ impl Rect2 {
 
     /// Bounding box of this rect after an affine transform.
     pub fn transformed(&self, a: &Affine2) -> Rect2 {
-        let corners = [
-            self.min,
-            vec2(self.max().x, self.min.y),
-            self.max(),
-            vec2(self.min.x, self.max().y),
-        ]
-        .map(|c| a.transform_point2(c));
+        let corners = [self.min, vec2(self.max().x, self.min.y), self.max(), vec2(self.min.x, self.max().y)].map(|c| a.transform_point2(c));
         let mut lo = corners[0];
         let mut hi = corners[0];
         for c in &corners[1..] {

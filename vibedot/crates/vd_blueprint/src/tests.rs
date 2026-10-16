@@ -3,12 +3,12 @@
 use std::sync::Arc;
 
 use vd_core::{StringName, VType, Variant, vec2};
-use vd_scene::{Label, Node, NodeKind, SceneTree, Node2D};
+use vd_scene::{Label, Node, Node2D, NodeKind, SceneTree};
 
+use crate::compile;
 use crate::defs::EventKind;
 use crate::graph::{Blueprint, PinRef};
 use crate::vm::{Instance, NullHost};
-use crate::compile;
 
 fn link(bp: &mut Blueprint, a: crate::BpNodeId, ap: &str, b: crate::BpNodeId, bp_: &str) {
     bp.connect(PinRef::new(a, ap), PinRef::new(b, bp_)).unwrap_or_else(|e| panic!("{ap} -> {bp_}: {e}"));

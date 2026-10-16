@@ -49,10 +49,7 @@ pub enum ExportError {
 
 /// Lowercase, filesystem-safe name.
 pub fn slug(name: &str) -> String {
-    let s: String = name
-        .chars()
-        .map(|c| if c.is_ascii_alphanumeric() { c.to_ascii_lowercase() } else { '-' })
-        .collect();
+    let s: String = name.chars().map(|c| if c.is_ascii_alphanumeric() { c.to_ascii_lowercase() } else { '-' }).collect();
     let s = s.trim_matches('-').to_owned();
     if s.is_empty() { "game".into() } else { s }
 }
@@ -71,10 +68,7 @@ pub fn find_player(explicit: Option<&Path>, platform: Platform) -> Result<PathBu
     if let Some(dir) = std::env::current_exe().ok().and_then(|e| e.parent().map(Path::to_path_buf)) {
         candidates.push(dir.join(file));
     }
-    candidates
-        .into_iter()
-        .find(|p| p.is_file())
-        .ok_or_else(|| ExportError::NoPlayer(file.to_owned()))
+    candidates.into_iter().find(|p| p.is_file()).ok_or_else(|| ExportError::NoPlayer(file.to_owned()))
 }
 
 /// Writes `game.vpk` for the project.
@@ -137,9 +131,7 @@ pub fn generate_icon(size: u32) -> Vec<u8> {
         *p = image::Rgba([mix(r, 14.0), mix(g, 14.0), mix(b, 24.0), (bg.max(a) * 255.0) as u8]);
     }
     let mut out = Vec::new();
-    image::DynamicImage::ImageRgba8(img)
-        .write_to(&mut std::io::Cursor::new(&mut out), image::ImageFormat::Png)
-        .expect("png encoding");
+    image::DynamicImage::ImageRgba8(img).write_to(&mut std::io::Cursor::new(&mut out), image::ImageFormat::Png).expect("png encoding");
     out
 }
 
@@ -151,12 +143,7 @@ pub struct ExportResult {
 }
 
 /// Exports `project_dir` into `out_dir` for `platform`.
-pub fn export_project(
-    project_dir: &Path,
-    out_dir: &Path,
-    platform: Platform,
-    player: Option<&Path>,
-) -> Result<ExportResult, ExportError> {
+pub fn export_project(project_dir: &Path, out_dir: &Path, platform: Platform, player: Option<&Path>) -> Result<ExportResult, ExportError> {
     let settings = ProjectSettings::load_dir(project_dir).map_err(|e| ExportError::Project(e.to_string()))?;
     let name = settings.name.clone();
     let exe_slug = slug(&name);

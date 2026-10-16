@@ -121,7 +121,9 @@ impl eframe::App for PlayerApp {
                 return;
             }
             let Some(game) = &mut self.game else { return };
-            let Some(rs) = frame.wgpu_render_state() else { return };
+            let Some(rs) = frame.wgpu_render_state() else {
+                return;
+            };
             let size = rect_pixels(&ctx, rect);
             game.host.viewport = vd_core::vec2(size.0 as f32, size.1 as f32);
             game.host.input.begin_frame();
@@ -182,9 +184,7 @@ fn main() {
     vd_egui::init_logger();
     let args: Vec<String> = std::env::args().skip(1).collect();
     let flag = |name: &str| args.iter().position(|a| a == name).and_then(|i| args.get(i + 1)).cloned();
-    let positional = args.iter().enumerate().find(|(i, a)| {
-        !a.starts_with("--") && (*i == 0 || !args[*i - 1].starts_with("--"))
-    });
+    let positional = args.iter().enumerate().find(|(i, a)| !a.starts_with("--") && (*i == 0 || !args[*i - 1].starts_with("--")));
     let loaded = locate(positional.map(|(_, a)| a.as_str()));
 
     if let Some(out) = flag("--screenshot") {

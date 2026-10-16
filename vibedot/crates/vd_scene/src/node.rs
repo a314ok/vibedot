@@ -53,9 +53,7 @@ pub struct KindInfo {
 impl NodeKind {
     /// Every creatable type, with a constructor (presets for body types).
     pub fn catalog() -> Vec<(KindInfo, NodeKind)> {
-        let body = |t: BodyType, shape: CollisionShape| {
-            NodeKind::Body2D(Body2D { body_type: t, shape, ..Default::default() })
-        };
+        let body = |t: BodyType, shape: CollisionShape| NodeKind::Body2D(Body2D { body_type: t, shape, ..Default::default() });
         let mut v = vec![
             NodeKind::Node(PlainNode::default()),
             NodeKind::Node2D(Node2D::default()),
@@ -92,9 +90,7 @@ impl NodeKind {
                 BodyType::Area => ("Area2D", "○", "Physics", "Detects overlaps, no collision response"),
             },
             NodeKind::Timer(_) => ("Timer", "⏱", "Core", "Fires `On Timeout` periodically"),
-            NodeKind::WorldEnvironment(_) => {
-                ("WorldEnvironment", "🌌", "Rendering", "Bloom, tonemapping, vignette, CRT…")
-            }
+            NodeKind::WorldEnvironment(_) => ("WorldEnvironment", "🌌", "Rendering", "Bloom, tonemapping, vignette, CRT…"),
         };
         KindInfo { type_name, icon, category, description }
     }
@@ -180,7 +176,12 @@ pub struct Node {
 
 const COMMON_NODE: &[PropertyInfo] = &[
     PropertyInfo { name: "process_mode", ty: VType::String, hint: PropHint::Enum(ProcessMode::NAMES), group: "Process" },
-    PropertyInfo { name: "process_priority", ty: VType::Number, hint: PropHint::Range { min: -100.0, max: 100.0, step: 1.0 }, group: "Process" },
+    PropertyInfo {
+        name: "process_priority",
+        ty: VType::Number,
+        hint: PropHint::Range { min: -100.0, max: 100.0, step: 1.0 },
+        group: "Process",
+    },
     PropertyInfo { name: "unique_name_in_owner", ty: VType::Bool, hint: PropHint::None, group: "Node" },
 ];
 

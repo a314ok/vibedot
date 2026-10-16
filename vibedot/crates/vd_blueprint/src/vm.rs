@@ -81,11 +81,7 @@ impl Instance {
                 ConstVal::SelfNode => self_obj.clone(),
             };
         }
-        let vars = program
-            .variables
-            .iter()
-            .map(|v| override_var(&v.name).map_or_else(|| v.default.clone(), |o| o.coerce(v.ty)))
-            .collect();
+        let vars = program.variables.iter().map(|v| override_var(&v.name).map_or_else(|| v.default.clone(), |o| o.coerce(v.ty))).collect();
         Self {
             flags: vec![false; program.num_flags as usize],
             program,

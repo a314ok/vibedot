@@ -120,16 +120,7 @@ pub fn cubic_interpolate(from: Real, to: Real, pre: Real, post: Real, weight: Re
 }
 
 /// Barry-Goldman method.
-pub fn cubic_interpolate_in_time(
-    from: Real,
-    to: Real,
-    pre: Real,
-    post: Real,
-    weight: Real,
-    to_t: Real,
-    pre_t: Real,
-    post_t: Real,
-) -> Real {
+pub fn cubic_interpolate_in_time(from: Real, to: Real, pre: Real, post: Real, weight: Real, to_t: Real, pre_t: Real, post_t: Real) -> Real {
     let t = lerp(0.0, to_t, weight);
     let a1 = lerp(pre, from, if pre_t == 0.0 { 0.0 } else { (t - pre_t) / -pre_t });
     let a2 = lerp(from, to, if to_t == 0.0 { 0.5 } else { t / to_t });
@@ -235,7 +226,7 @@ pub fn rad_to_deg(r: Real) -> Real {
 }
 
 pub fn linear_to_db(linear: Real) -> Real {
-    linear.ln() * 8.685_889_6
+    linear.ln() * 8.685_889
 }
 
 pub fn db_to_linear(db: Real) -> Real {

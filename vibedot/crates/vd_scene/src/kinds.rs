@@ -135,7 +135,7 @@ node_kind! {
         one_shot: bool = false => NONE,
         lifetime: f32 = 1.2 => PropHint::Range { min: 0.01, max: 30.0, step: 0.01 },
         lifetime_random: f32 = 0.3 => PropHint::Range { min: 0.0, max: 1.0, step: 0.01 },
-        direction: f32 = -1.5708 => PropHint::Angle,
+        direction: f32 = -std::f32::consts::FRAC_PI_2 => PropHint::Angle,
         spread: f32 = 0.6 => PropHint::Angle,
         speed_min: f32 = 60.0 => PropHint::Range { min: 0.0, max: 4000.0, step: 1.0 },
         speed_max: f32 = 140.0 => PropHint::Range { min: 0.0, max: 4000.0, step: 1.0 },

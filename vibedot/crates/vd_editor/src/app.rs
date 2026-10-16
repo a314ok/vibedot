@@ -34,7 +34,10 @@ pub enum Request {
     OpenScene(String),
     OpenBlueprint(String),
     NewScene(String),
-    NewBlueprint { path: String, attach_to: Option<NodeId> },
+    NewBlueprint {
+        path: String,
+        attach_to: Option<NodeId>,
+    },
     SaveAll,
     Play,
     Stop,
@@ -42,11 +45,20 @@ pub enum Request {
     RefreshFiles,
     CloseProject,
     Export,
-    InstanceScene { path: String, at: Vec2 },
-    AddSprite { texture: String, at: Vec2 },
+    InstanceScene {
+        path: String,
+        at: Vec2,
+    },
+    AddSprite {
+        texture: String,
+        at: Vec2,
+    },
     DeleteFile(String),
     /// Add an `On Event / Method` handler to `blueprint` (signal stub).
-    AddMethodHandler { blueprint: String, method: String },
+    AddMethodHandler {
+        blueprint: String,
+        method: String,
+    },
 }
 
 #[derive(Clone, Debug)]
@@ -152,17 +164,16 @@ impl OpenProject {
             // No main scene yet: start with an empty one.
             let mut t = vd_scene::SceneTree::new();
             let root = t.root();
-            let main = t.add_new_child(root, vd_scene::Node::new("Main", vd_scene::NodeKind::Node2D(Default::default()))).map_err(|e| e.to_string())?;
+            let main = t
+                .add_new_child(root, vd_scene::Node::new("Main", vd_scene::NodeKind::Node2D(Default::default())))
+                .map_err(|e| e.to_string())?;
             t.set_current_scene(Some(main));
             Ok::<SceneDoc, String>(SceneDoc::new(&settings.main_scene, t))
         })?;
         let mut p = Self {
             files: assets.list(),
             dir: dir.to_path_buf(),
-            cam: EditorCam {
-                center: Vec2::new(settings.window.width as f32 * 0.5, settings.window.height as f32 * 0.5),
-                zoom: 0.8,
-            },
+            cam: EditorCam { center: Vec2::new(settings.window.width as f32 * 0.5, settings.window.height as f32 * 0.5), zoom: 0.8 },
             settings,
             assets,
             scene,
@@ -335,11 +346,22 @@ impl EditorApp {
                         let name = path.rsplit('/').next().unwrap_or("Scene").trim_end_matches(".vscn");
                         let mut t = vd_scene::SceneTree::new();
                         let root = t.root();
-                        let pascal: String = name.split(['_', '-', ' ']).map(|w| {
-                            let mut c = w.chars();
-                            c.next().map(|f| f.to_uppercase().collect::<String>() + c.as_str()).unwrap_or_default()
-                        }).collect();
-                        let n = t.add_new_child(root, vd_scene::Node::new(if pascal.is_empty() { "Scene" } else { &pascal }, vd_scene::NodeKind::Node2D(Default::default()))).expect("root");
+                        let pascal: String = name
+                            .split(['_', '-', ' '])
+                            .map(|w| {
+                                let mut c = w.chars();
+                                c.next().map(|f| f.to_uppercase().collect::<String>() + c.as_str()).unwrap_or_default()
+                            })
+                            .collect();
+                        let n = t
+                            .add_new_child(
+                                root,
+                                vd_scene::Node::new(
+                                    if pascal.is_empty() { "Scene" } else { &pascal },
+                                    vd_scene::NodeKind::Node2D(Default::default()),
+                                ),
+                            )
+                            .expect("root");
                         t.set_current_scene(Some(n));
                         match SceneFile::from_tree(&t).save(&p.dir.join(&path)) {
                             Ok(()) => {
@@ -399,9 +421,14 @@ impl EditorApp {
                         }
                     }
                     Request::AddSprite { texture, at } => {
-                        let size = image::image_dimensions(p.dir.join(&texture)).map(|(w, h)| Vec2::new(w as f32, h as f32)).unwrap_or(Vec2::splat(64.0));
+                        let size = image::image_dimensions(p.dir.join(&texture))
+                            .map(|(w, h)| Vec2::new(w as f32, h as f32))
+                            .unwrap_or(Vec2::splat(64.0));
                         let name = texture.rsplit('/').next().unwrap_or("Sprite").split('.').next().unwrap_or("Sprite").to_owned();
-                        let node = vd_scene::Node::new(name, vd_scene::NodeKind::Sprite2D(vd_scene::Sprite2D { texture, size, ..Default::default() }));
+                        let node = vd_scene::Node::new(
+                            name,
+                            vd_scene::NodeKind::Sprite2D(vd_scene::Sprite2D { texture, size, ..Default::default() }),
+                        );
                         let parent = p.scene.root();
                         if let Ok(id) = p.scene.tree.add_new_child(parent, node) {
                             p.scene.tree.set_global_position(id, at);
@@ -580,55 +607,61 @@ pub fn dock_frame() -> egui::Frame {
 }
 
 fn top_bar(ui: &mut egui::Ui, p: &mut OpenProject, shared: &mut Shared) {
-    egui::Panel::top("vd_top").exact_size(44.0).frame(egui::Frame::NONE.fill(theme::BG).inner_margin(egui::Margin::symmetric(10, 6))).show(ui, |ui| {
-        let playing = p.play.is_some();
-        let paused = p.play.as_ref().is_some_and(|pl| pl.paused);
-        let name = p.name().to_owned();
-        let (_, actions) = egui::Sides::new().height(32.0).show(
-            ui,
-            |ui| {
-                ui.label(RichText::new("♦").size(22.0).color(theme::ACCENT));
-                ui.label(RichText::new("vibedot").size(17.0).strong().color(theme::TEXT));
-                ui.add_space(8.0);
-                main_menu(ui, p, shared);
-                ui.add_space(16.0);
-                workspace_tabs(ui, p);
-            },
-            |ui| {
-                let mut actions = Vec::new();
-                if playing {
-                    if theme::accent_button(ui, "■  Stop", theme::ERR).on_hover_text("Stop (F5)").clicked() {
-                        actions.push(TopAction::Request(Request::Stop));
+    egui::Panel::top("vd_top").exact_size(44.0).frame(egui::Frame::NONE.fill(theme::BG).inner_margin(egui::Margin::symmetric(10, 6))).show(
+        ui,
+        |ui| {
+            let playing = p.play.is_some();
+            let paused = p.play.as_ref().is_some_and(|pl| pl.paused);
+            let name = p.name().to_owned();
+            let (_, actions) = egui::Sides::new().height(32.0).show(
+                ui,
+                |ui| {
+                    ui.label(RichText::new("♦").size(22.0).color(theme::ACCENT));
+                    ui.label(RichText::new("vibedot").size(17.0).strong().color(theme::TEXT));
+                    ui.add_space(8.0);
+                    main_menu(ui, p, shared);
+                    ui.add_space(16.0);
+                    workspace_tabs(ui, p);
+                },
+                |ui| {
+                    let mut actions = Vec::new();
+                    if playing {
+                        if theme::accent_button(ui, "■  Stop", theme::ERR).on_hover_text("Stop (F5)").clicked() {
+                            actions.push(TopAction::Request(Request::Stop));
+                        }
+                        if ui.button(if paused { "▶ Resume" } else { "⏸ Pause" }).clicked() {
+                            actions.push(TopAction::TogglePause);
+                        }
+                    } else {
+                        if theme::accent_button(ui, "▶  Play", theme::ACCENT)
+                            .on_hover_text("Play the current scene in the viewport (F5)")
+                            .clicked()
+                        {
+                            actions.push(TopAction::Request(Request::Play));
+                        }
+                        if ui.button("🗗 Window").on_hover_text("Run the project in a separate window (F6)").clicked() {
+                            actions.push(TopAction::Request(Request::RunExternal));
+                        }
                     }
-                    if ui.button(if paused { "▶ Resume" } else { "⏸ Pause" }).clicked() {
-                        actions.push(TopAction::TogglePause);
+                    if ui.button("📦 Export").on_hover_text("Export as a standalone app").clicked() {
+                        actions.push(TopAction::Request(Request::Export));
                     }
-                } else {
-                    if theme::accent_button(ui, "▶  Play", theme::ACCENT).on_hover_text("Play the current scene in the viewport (F5)").clicked() {
-                        actions.push(TopAction::Request(Request::Play));
-                    }
-                    if ui.button("🗗 Window").on_hover_text("Run the project in a separate window (F6)").clicked() {
-                        actions.push(TopAction::Request(Request::RunExternal));
-                    }
-                }
-                if ui.button("📦 Export").on_hover_text("Export as a standalone app").clicked() {
-                    actions.push(TopAction::Request(Request::Export));
-                }
-                ui.label(RichText::new(&name).color(theme::TEXT_DIM));
-                actions
-            },
-        );
-        for a in actions {
-            match a {
-                TopAction::Request(r) => shared.request(r),
-                TopAction::TogglePause => {
-                    if let Some(pl) = &mut p.play {
-                        pl.paused = !pl.paused;
+                    ui.label(RichText::new(&name).color(theme::TEXT_DIM));
+                    actions
+                },
+            );
+            for a in actions {
+                match a {
+                    TopAction::Request(r) => shared.request(r),
+                    TopAction::TogglePause => {
+                        if let Some(pl) = &mut p.play {
+                            pl.paused = !pl.paused;
+                        }
                     }
                 }
             }
-        }
-    });
+        },
+    );
 }
 
 enum TopAction {
@@ -713,23 +746,30 @@ fn workspace_tabs(ui: &mut egui::Ui, p: &mut OpenProject) {
 }
 
 fn status_bar(ui: &mut egui::Ui, p: &OpenProject, vp: &GameViewport) {
-    egui::Panel::bottom("vd_status").exact_size(24.0).frame(egui::Frame::NONE.fill(theme::BG_DEEP).inner_margin(egui::Margin::symmetric(10, 3))).show(ui, |ui| {
-        ui.horizontal_centered(|ui| {
-            let small = |t: String| RichText::new(t).small().color(theme::TEXT_DIM);
-            let state = if p.play.is_some() { RichText::new("• PLAYING").small().color(theme::OK) } else { RichText::new("• EDITING").small().color(theme::ACCENT) };
-            ui.label(state);
-            ui.label(small(format!("{}{}", p.scene.path, if p.scene.dirty { " •" } else { "" })));
-            ui.label(small(format!("{} nodes", p.scene.tree.get_node_count().saturating_sub(1))));
-            ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                ui.label(small(format!("Vibedot {}", vd_core::VERSION)));
-                ui.label(small(format!(
-                    "{:.0} fps · {} draws · {} inst · {} lights",
-                    p.fps, vp.stats.draw_calls, vp.stats.instances, vp.stats.lights
-                )));
-                ui.label(small(format!("zoom {:.0}%", p.cam.zoom * 100.0)));
+    egui::Panel::bottom("vd_status")
+        .exact_size(24.0)
+        .frame(egui::Frame::NONE.fill(theme::BG_DEEP).inner_margin(egui::Margin::symmetric(10, 3)))
+        .show(ui, |ui| {
+            ui.horizontal_centered(|ui| {
+                let small = |t: String| RichText::new(t).small().color(theme::TEXT_DIM);
+                let state = if p.play.is_some() {
+                    RichText::new("• PLAYING").small().color(theme::OK)
+                } else {
+                    RichText::new("• EDITING").small().color(theme::ACCENT)
+                };
+                ui.label(state);
+                ui.label(small(format!("{}{}", p.scene.path, if p.scene.dirty { " •" } else { "" })));
+                ui.label(small(format!("{} nodes", p.scene.tree.get_node_count().saturating_sub(1))));
+                ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                    ui.label(small(format!("Vibedot {}", vd_core::VERSION)));
+                    ui.label(small(format!(
+                        "{:.0} fps · {} draws · {} inst · {} lights",
+                        p.fps, vp.stats.draw_calls, vp.stats.instances, vp.stats.lights
+                    )));
+                    ui.label(small(format!("zoom {:.0}%", p.cam.zoom * 100.0)));
+                });
             });
         });
-    });
 }
 
 fn toasts(ctx: &egui::Context, shared: &mut Shared) {
@@ -771,7 +811,9 @@ pub fn open_in_file_manager(dir: &Path) {
 }
 
 fn export_dialog(ctx: &egui::Context, p: &mut OpenProject, shared: &mut Shared) {
-    let Some(mut dlg) = p.dialogs.export.take() else { return };
+    let Some(mut dlg) = p.dialogs.export.take() else {
+        return;
+    };
     let d = &mut dlg;
     let mut open = true;
     egui::Window::new("📦  Export app").open(&mut open).collapsible(false).resizable(false).default_width(460.0).show(ctx, |ui| {
@@ -791,7 +833,11 @@ fn export_dialog(ctx: &egui::Context, p: &mut OpenProject, shared: &mut Shared) 
             ui.end_row();
         });
         if d.platform != crate::export::Platform::current() {
-            ui.label(RichText::new("⚠ Cross-platform export needs a player built for that platform (see build.sh export --target).").small().color(theme::WARN));
+            ui.label(
+                RichText::new("⚠ Cross-platform export needs a player built for that platform (see build.sh export --target).")
+                    .small()
+                    .color(theme::WARN),
+            );
         }
         ui.add_space(8.0);
         if theme::accent_button(ui, "Export", theme::ACCENT).clicked() {
@@ -882,7 +928,11 @@ fn project_settings_dialog(ctx: &egui::Context, p: &mut OpenProject, shared: &mu
         });
         ui.separator();
         ui.label(RichText::new("Input map").strong());
-        ui.label(RichText::new("Keys: A–Z, Num0–Num9, Space, Enter, Escape, ArrowLeft…, F1–F12, MouseLeft/Right/Middle").small().color(theme::TEXT_DIM));
+        ui.label(
+            RichText::new("Keys: A–Z, Num0–Num9, Space, Enter, Escape, ArrowLeft…, F1–F12, MouseLeft/Right/Middle")
+                .small()
+                .color(theme::TEXT_DIM),
+        );
         let mut remove = None;
         egui::ScrollArea::vertical().max_height(240.0).show(ui, |ui| {
             for (action, keys) in s.input.iter_mut() {
@@ -937,7 +987,9 @@ fn about_dialog(ctx: &egui::Context, p: &mut OpenProject) {
             ui.label("A Rust game engine following Godot's architecture,");
             ui.label("with visual Blueprints and an HDR 2D renderer.");
             ui.add_space(6.0);
-            ui.label(RichText::new("Godot Engine is © Juan Linietsky, Ariel Manzur and contributors (MIT).").small().color(theme::TEXT_DIM));
+            ui.label(
+                RichText::new("Godot Engine is © Juan Linietsky, Ariel Manzur and contributors (MIT).").small().color(theme::TEXT_DIM),
+            );
         });
     });
     if !open {

@@ -1,7 +1,7 @@
 //! Project templates. Everything is built through the public scene and
 //! blueprint APIs, so templates double as executable documentation.
 
-use vd_blueprint::{BpNodeId, Blueprint, PinRef};
+use vd_blueprint::{Blueprint, BpNodeId, PinRef};
 use vd_core::{Color, Transform2D, VType, Variant, Vec2, vec2};
 use vd_scene::*;
 
@@ -116,11 +116,7 @@ pub fn empty_project(name: &str) -> Vec<File> {
 /// "Neon Drift": a complete top-down arcade game built only with blueprints.
 pub fn neon_drift() -> Vec<File> {
     let mut files: Vec<File> = Vec::new();
-    let mut project = ProjectSettings {
-        name: "Neon Drift".into(),
-        main_scene: "scenes/main.vscn".into(),
-        ..Default::default()
-    };
+    let mut project = ProjectSettings { name: "Neon Drift".into(), main_scene: "scenes/main.vscn".into(), ..Default::default() };
     project.physics.gravity = Vec2::ZERO;
     files.push(("project.vibedot".into(), project.to_json().into_bytes()));
 
@@ -158,9 +154,8 @@ pub fn neon_drift() -> Vec<File> {
     // Backdrop: soft nebulae and a starfield.
     let bg = t.add_new_child(main, node("Backdrop", NodeKind::Node2D(Node2D::default()))).unwrap();
     t.get_mut(bg).unwrap().z_index = -50;
-    for (i, (x, y, r, c)) in [(-500.0, -300.0, 900.0, violet), (600.0, 350.0, 1100.0, cyan), (-200.0, 500.0, 700.0, magenta)]
-        .into_iter()
-        .enumerate()
+    for (i, (x, y, r, c)) in
+        [(-500.0, -300.0, 900.0, violet), (600.0, 350.0, 1100.0, cyan), (-200.0, 500.0, 700.0, magenta)].into_iter().enumerate()
     {
         let mut neb = Shape2D { shape: ShapeType::Circle, size: vec2(r, r), color: c.with_alpha(0.12), ..Default::default() };
         neb.softness = r * 0.45;
@@ -173,7 +168,7 @@ pub fn neon_drift() -> Vec<File> {
         lifetime: 12.0,
         lifetime_random: 0.6,
         direction: 0.0,
-        spread: 3.14,
+        spread: std::f32::consts::PI,
         speed_min: 2.0,
         speed_max: 8.0,
         gravity: Vec2::ZERO,
@@ -204,7 +199,14 @@ pub fn neon_drift() -> Vec<File> {
         );
         wall.add_to_group("walls");
         let wall = t.add_new_child(walls, at(wall, x, y)).unwrap();
-        let mut edge = Shape2D { shape: ShapeType::RoundedRect, size: vec2(w, h * 0.25), corner_radius: 4.0, color: violet, emission: 2.5, ..Default::default() };
+        let mut edge = Shape2D {
+            shape: ShapeType::RoundedRect,
+            size: vec2(w, h * 0.25),
+            corner_radius: 4.0,
+            color: violet,
+            emission: 2.5,
+            ..Default::default()
+        };
         if w < h {
             edge.size = vec2(w * 0.25, h);
         }
@@ -254,8 +256,15 @@ pub fn neon_drift() -> Vec<File> {
         l.monospace = true;
     }
     t.add_new_child(hud, score).unwrap();
-    t.add_new_child(hud, at(node("Hint", label("WASD / arrows: fly    J or click: shoot    Esc: quit", 16.0, hex("#94a3b8"), TextAlign::Left, true)), 28.0, 70.0))
-        .unwrap();
+    t.add_new_child(
+        hud,
+        at(
+            node("Hint", label("WASD / arrows: fly    J or click: shoot    Esc: quit", 16.0, hex("#94a3b8"), TextAlign::Left, true)),
+            28.0,
+            70.0,
+        ),
+    )
+    .unwrap();
     let mut title = at(node("Title", label("NEON DRIFT", 64.0, cyan, TextAlign::Center, false)), 0.0, -560.0);
     if let NodeKind::Label(l) = &mut title.kind {
         l.emission = 2.0;
@@ -279,7 +288,8 @@ pub fn neon_drift() -> Vec<File> {
     enemy.add_to_group("enemies");
     enemy.script = Some("blueprints/enemy.vbp".into());
     let (mut t, e) = scene(enemy);
-    let mut ring = Shape2D { shape: ShapeType::Ring, size: vec2(38.0, 38.0), thickness: 5.0, color: magenta, emission: 3.0, ..Default::default() };
+    let mut ring =
+        Shape2D { shape: ShapeType::Ring, size: vec2(38.0, 38.0), thickness: 5.0, color: magenta, emission: 3.0, ..Default::default() };
     ring.softness = 1.0;
     t.add_new_child(e, node("Ring", NodeKind::Shape2D(ring))).unwrap();
     t.add_new_child(e, node("Core", shape(ShapeType::Triangle, vec2(16.0, 16.0), gold, 2.5))).unwrap();
@@ -289,11 +299,19 @@ pub fn neon_drift() -> Vec<File> {
     // ------------------------------------------------------------ bullet
     let mut bullet = node(
         "Bullet",
-        NodeKind::Body2D(Body2D { body_type: BodyType::Area, shape: CollisionShape::Circle, radius: 7.0, layer: 2, mask: 1, ..Default::default() }),
+        NodeKind::Body2D(Body2D {
+            body_type: BodyType::Area,
+            shape: CollisionShape::Circle,
+            radius: 7.0,
+            layer: 2,
+            mask: 1,
+            ..Default::default()
+        }),
     );
     bullet.script = Some("blueprints/bullet.vbp".into());
     let (mut t, b) = scene(bullet);
-    let mut core = Shape2D { shape: ShapeType::Circle, size: vec2(12.0, 12.0), color: Color::rgb(0.7, 1.0, 1.0), emission: 5.0, ..Default::default() };
+    let mut core =
+        Shape2D { shape: ShapeType::Circle, size: vec2(12.0, 12.0), color: Color::rgb(0.7, 1.0, 1.0), emission: 5.0, ..Default::default() };
     core.softness = 2.0;
     t.add_new_child(b, node("Core", NodeKind::Shape2D(core))).unwrap();
     t.add_new_child(b, node("Light", light(cyan, 0.8, 90.0))).unwrap();
@@ -302,7 +320,14 @@ pub fn neon_drift() -> Vec<File> {
     // ------------------------------------------------------------ orb
     let mut orb = node(
         "Orb",
-        NodeKind::Body2D(Body2D { body_type: BodyType::Area, shape: CollisionShape::Circle, radius: 16.0, layer: 2, mask: 1, ..Default::default() }),
+        NodeKind::Body2D(Body2D {
+            body_type: BodyType::Area,
+            shape: CollisionShape::Circle,
+            radius: 16.0,
+            layer: 2,
+            mask: 1,
+            ..Default::default()
+        }),
     );
     orb.script = Some("blueprints/orb.vbp".into());
     orb.add_to_group("orbs");
@@ -310,7 +335,14 @@ pub fn neon_drift() -> Vec<File> {
     let mut glow = Shape2D { shape: ShapeType::Circle, size: vec2(26.0, 26.0), color: gold, emission: 2.5, ..Default::default() };
     glow.softness = 3.0;
     t.add_new_child(o, node("Glow", NodeKind::Shape2D(glow))).unwrap();
-    let mut halo = Shape2D { shape: ShapeType::Ring, size: vec2(40.0, 40.0), thickness: 2.0, color: gold.with_alpha(0.7), emission: 2.0, ..Default::default() };
+    let mut halo = Shape2D {
+        shape: ShapeType::Ring,
+        size: vec2(40.0, 40.0),
+        thickness: 2.0,
+        color: gold.with_alpha(0.7),
+        emission: 2.0,
+        ..Default::default()
+    };
     halo.blend = BlendMode::Additive;
     t.add_new_child(o, node("Halo", NodeKind::Shape2D(halo))).unwrap();
     t.add_new_child(o, node("Light", light(gold, 1.0, 140.0))).unwrap();
@@ -325,7 +357,7 @@ pub fn neon_drift() -> Vec<File> {
         rate: 0.0,
         burst: 70,
         lifetime: 0.75,
-        spread: 3.14,
+        spread: std::f32::consts::PI,
         speed_min: 80.0,
         speed_max: 460.0,
         gravity: Vec2::ZERO,
@@ -363,12 +395,8 @@ fn main_bp() -> Vec<u8> {
     let ang = g.n("math.random", 220.0, 200.0, &[("min", n(0.0)), ("max", n(360.0))]);
     let off = g.n("vec.from_angle", 440.0, 200.0, &[("length", n(620.0))]);
     let sum = g.n("math.add", 640.0, 140.0, &[]);
-    let inside = g.n(
-        "vec.clamp",
-        640.0,
-        240.0,
-        &[("min", Variant::Vec2(vec2(-940.0, -640.0))), ("max", Variant::Vec2(vec2(940.0, 640.0)))],
-    );
+    let inside =
+        g.n("vec.clamp", 640.0, 240.0, &[("min", Variant::Vec2(vec2(-940.0, -640.0))), ("max", Variant::Vec2(vec2(940.0, 640.0)))]);
     let spawn = g.n("node.spawn", 860.0, 0.0, &[("scene", s("scenes/enemy.vscn"))]);
     g.l(ev, "then", spawn, "exec");
     g.l(player, "node", ppos, "node");
@@ -405,7 +433,8 @@ fn main_bp() -> Vec<u8> {
             g.chain(&[(set, "then"), (boom, "then"), (shake, "then")]);
             g.l(ev, "payload", boom, "position");
         } else {
-            let flash = g.n("game.flash", 1040.0, y, &[("color", Variant::Color(Color::rgba(1.0, 0.85, 0.3, 0.18))), ("duration", n(0.12))]);
+            let flash =
+                g.n("game.flash", 1040.0, y, &[("color", Variant::Color(Color::rgba(1.0, 0.85, 0.3, 0.18))), ("duration", n(0.12))]);
             g.l(set, "then", flash, "exec");
         }
     }
@@ -422,7 +451,17 @@ fn main_bp() -> Vec<u8> {
     let delay = g.n("flow.delay", 1340.0, 1180.0, &[("seconds", n(0.6))]);
     let normal = g.n("game.time_scale", 1560.0, 1180.0, &[("scale", n(1.0))]);
     let restart = g.n("game.reload", 1780.0, 1180.0, &[]);
-    g.chain(&[(ev, "then"), (once, "then"), (show, "then"), (slow, "then"), (flash, "then"), (shake, "then"), (delay, "completed"), (normal, "then"), (restart, "then")]);
+    g.chain(&[
+        (ev, "then"),
+        (once, "then"),
+        (show, "then"),
+        (slow, "then"),
+        (flash, "then"),
+        (shake, "then"),
+        (delay, "completed"),
+        (normal, "then"),
+        (restart, "then"),
+    ]);
     g.l(over, "node", show, "node");
 
     // Quit on Escape; start the timers on ready.
@@ -630,8 +669,8 @@ mod tests {
 
     fn run(files: Vec<File>, frames: u32, hold: &[&str]) -> Game {
         let mut assets = MemAssets::default();
-        for (p, d) in &files {
-            assets.insert(p, d.clone());
+        for (p, d) in files {
+            assets.insert(&p, d);
         }
         let project = ProjectSettings::from_json(&assets.read_string_lossy("project.vibedot")).unwrap();
         let mut game = Game::new(project, Arc::new(assets), Arc::new(ScriptRegistry::default()));

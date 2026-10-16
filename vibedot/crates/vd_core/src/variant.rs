@@ -201,9 +201,7 @@ impl Variant {
             }
             (Variant::Number(a), Variant::Number(b)) => (a - b).abs() < 1e-9,
             (Variant::Vec2(a), Variant::Vec2(b)) => a.abs_diff_eq(*b, 1e-5),
-            (Variant::String(a), b) | (b, Variant::String(a)) if !matches!(b, Variant::String(_)) => {
-                **a == *b.to_string()
-            }
+            (Variant::String(a), b) | (b, Variant::String(a)) if !matches!(b, Variant::String(_)) => **a == *b.to_string(),
             _ => self == other,
         }
     }

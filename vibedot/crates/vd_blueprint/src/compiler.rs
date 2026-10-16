@@ -13,8 +13,8 @@ use std::collections::{HashMap, HashSet};
 
 use vd_core::{StringName, Variant};
 
-use crate::defs::{EventKind, Flavor, FlowKind, NodeDef, PinDef, PinKind, VarKind, Lit};
-use crate::graph::{BpNode, BpNodeId, Blueprint, PinRef, VarDef};
+use crate::defs::{EventKind, Flavor, FlowKind, Lit, NodeDef, PinDef, PinKind, VarKind};
+use crate::graph::{Blueprint, BpNode, BpNodeId, PinRef, VarDef};
 use crate::ops::Op;
 
 /// Register index. 16 bits keep instructions at 12 bytes.
@@ -24,25 +24,70 @@ pub type Reg = u16;
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum Instr {
     /// `outs[..] = op(args[..])`; arg/out register lists live in `Program::pool`.
-    Call { op: Op, args: u32, nargs: u8, outs: u32, nouts: u8 },
-    Move { dst: Reg, src: Reg },
-    Jump { target: u32 },
-    JumpIfNot { cond: Reg, target: u32 },
+    Call {
+        op: Op,
+        args: u32,
+        nargs: u8,
+        outs: u32,
+        nouts: u8,
+    },
+    Move {
+        dst: Reg,
+        src: Reg,
+    },
+    Jump {
+        target: u32,
+    },
+    JumpIfNot {
+        cond: Reg,
+        target: u32,
+    },
     /// `if idx > last { goto exit }`
-    ForCheck { idx: Reg, last: Reg, exit: u32 },
+    ForCheck {
+        idx: Reg,
+        last: Reg,
+        exit: u32,
+    },
     /// `reg += 1`
-    Incr { reg: Reg },
+    Incr {
+        reg: Reg,
+    },
     /// `if idx >= len(array) { goto exit } else { elem = array[idx] }`
-    ArrayIter { array: Reg, idx: Reg, elem: Reg, exit: u32 },
-    GetVar { dst: Reg, var: u16 },
-    SetVar { var: u16, src: Reg },
-    AddVar { var: u16, src: Reg, dst: Reg },
+    ArrayIter {
+        array: Reg,
+        idx: Reg,
+        elem: Reg,
+        exit: u32,
+    },
+    GetVar {
+        dst: Reg,
+        var: u16,
+    },
+    SetVar {
+        var: u16,
+        src: Reg,
+    },
+    AddVar {
+        var: u16,
+        src: Reg,
+        dst: Reg,
+    },
     /// Do Once: `if flag { goto skip } else { flag = true }`
-    TestSetFlag { flag: u16, skip: u32 },
+    TestSetFlag {
+        flag: u16,
+        skip: u32,
+    },
     /// Flip Flop: toggles `flag`; writes `is_a`; jumps to `b` when on B.
-    FlipFlop { flag: u16, is_a: Reg, b: u32 },
+    FlipFlop {
+        flag: u16,
+        is_a: Reg,
+        b: u32,
+    },
     /// Schedule `resume` after `seconds` (latent), then continue.
-    Delay { seconds: Reg, resume: u32 },
+    Delay {
+        seconds: Reg,
+        resume: u32,
+    },
     Return,
 }
 
@@ -214,11 +259,7 @@ impl<'a> Compiler<'a> {
         match self.bp.variables.iter().position(|v| v.name == name) {
             Some(i) => Some(i as u16),
             None => {
-                let msg = if name.is_empty() {
-                    "choose a variable".to_owned()
-                } else {
-                    format!("unknown variable '{name}'")
-                };
+                let msg = if name.is_empty() { "choose a variable".to_owned() } else { format!("unknown variable '{name}'") };
                 self.err(Some(node), msg);
                 None
             }
@@ -231,10 +272,7 @@ impl<'a> Compiler<'a> {
                 Some(d) => {
                     self.nodes.insert(n.id, (n, d));
                 }
-                None => self.errors.push(CompileError {
-                    node: Some(n.id),
-                    message: format!("unknown node type '{}'", n.op),
-                }),
+                None => self.errors.push(CompileError { node: Some(n.id), message: format!("unknown node type '{}'", n.op) }),
             }
         }
         // Validate links up-front so the editor can flag every broken wire.
@@ -258,19 +296,16 @@ impl<'a> Compiler<'a> {
             return;
         }
 
-        let mut events: Vec<(&BpNode, &NodeDef)> = self
-            .nodes
-            .values()
-            .filter(|(_, d)| d.is_event())
-            .map(|&(n, d)| (n, d))
-            .collect();
+        let mut events: Vec<(&BpNode, &NodeDef)> = self.nodes.values().filter(|(_, d)| d.is_event()).map(|&(n, d)| (n, d)).collect();
         events.sort_by_key(|(n, _)| n.id);
         for (n, d) in events {
             let Flavor::Event(kind) = d.flavor else { unreachable!() };
             self.current = Some(n.id);
-            let filter = d.inputs.iter().find(|p| p.literal_only).map_or(StringName::EMPTY, |p| {
-                StringName::new(n.literal(p.name).to_string().trim())
-            });
+            let filter = d
+                .inputs
+                .iter()
+                .find(|p| p.literal_only)
+                .map_or(StringName::EMPTY, |p| StringName::new(n.literal(p.name).to_string().trim()));
             let outs: Vec<Reg> = d.outputs.iter().filter(|p| !p.is_exec()).map(|p| self.out_reg(n.id, p.name)).collect();
             let entry = self.here();
             self.exec_stack.push(n.id);
@@ -296,7 +331,9 @@ impl<'a> Compiler<'a> {
     }
 
     fn exec_node(&mut self, id: BpNodeId) {
-        let Some(&(node, def)) = self.nodes.get(&id) else { return };
+        let Some(&(node, def)) = self.nodes.get(&id) else {
+            return;
+        };
         if self.exec_stack.contains(&id) {
             self.err(Some(id), "execution wires form a loop - use a For/While loop node instead");
             return;

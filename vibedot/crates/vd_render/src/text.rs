@@ -142,10 +142,7 @@ impl GlyphAtlas {
             }
         }
         self.dirty = true;
-        Some(AtlasGlyph {
-            rect: [ax, ay, uw, uh],
-            offset: vec2(b.min.x - SPREAD as f32, b.min.y - SPREAD as f32),
-        })
+        Some(AtlasGlyph { rect: [ax, ay, uw, uh], offset: vec2(b.min.x - SPREAD as f32, b.min.y - SPREAD as f32) })
     }
 
     /// Lays out `text` at `size` pixels. Returns glyph quads and the block size.

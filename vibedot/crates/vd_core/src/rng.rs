@@ -50,7 +50,7 @@ impl Rng {
             return lo;
         }
         let span = (hi_inclusive - lo + 1) as u64;
-        lo + (u64::from(self.next_u32()) * span >> 32) as i64
+        lo + ((u64::from(self.next_u32()) * span) >> 32) as i64
     }
 
     pub fn chance(&mut self, p: f32) -> bool {

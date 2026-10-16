@@ -134,11 +134,14 @@ pub fn show(ui: &mut egui::Ui, st: &mut ManagerState, shared: &mut Shared) -> Op
                     }
                     egui::ScrollArea::vertical().max_height(340.0).show(ui, |ui| {
                         for r in st.recent.clone() {
-                            let resp = egui::Frame::NONE.fill(theme::SURFACE).corner_radius(8).inner_margin(egui::Margin::same(10)).show(ui, |ui| {
-                                ui.set_width(ui.available_width());
-                                ui.label(RichText::new(&r.name).strong().size(15.0));
-                                ui.label(RichText::new(r.path.display().to_string()).small().color(theme::TEXT_DIM));
-                            });
+                            let resp = egui::Frame::NONE.fill(theme::SURFACE).corner_radius(8).inner_margin(egui::Margin::same(10)).show(
+                                ui,
+                                |ui| {
+                                    ui.set_width(ui.available_width());
+                                    ui.label(RichText::new(&r.name).strong().size(15.0));
+                                    ui.label(RichText::new(r.path.display().to_string()).small().color(theme::TEXT_DIM));
+                                },
+                            );
                             let resp = resp.response.interact(egui::Sense::click());
                             if resp.hovered() {
                                 ui.painter().rect_stroke(resp.rect, 8, egui::Stroke::new(1.0, theme::ACCENT), egui::StrokeKind::Inside);
@@ -175,7 +178,11 @@ pub fn show(ui: &mut egui::Ui, st: &mut ManagerState, shared: &mut Shared) -> Op
                     ui.add_space(8.0);
                     ui.label(RichText::new("Template").strong());
                     for (t, title, desc) in [
-                        (Template::NeonDrift, "🌌  Neon Drift", "Complete arcade game: ship, enemies, shooting, particles, bloom - all in Blueprints"),
+                        (
+                            Template::NeonDrift,
+                            "🌌  Neon Drift",
+                            "Complete arcade game: ship, enemies, shooting, particles, bloom - all in Blueprints",
+                        ),
                         (Template::Empty, "▫  Empty", "One scene with a camera and an environment"),
                     ] {
                         let selected = st.template == t;

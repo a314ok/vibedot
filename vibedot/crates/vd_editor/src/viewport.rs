@@ -60,7 +60,6 @@ impl Xf {
     }
 }
 
-
 /// Local-space bounds used for picking and selection outlines.
 pub fn local_bounds(node: &Node) -> Option<Rect2> {
     let icon = Rect2::from_center_size(Vec2::ZERO, Vec2::splat(28.0));
@@ -111,7 +110,9 @@ fn pick(tree: &SceneTree, root: NodeId, world: Vec2) -> Option<NodeId> {
         if !node.is_visible_in_tree() || id == root {
             continue;
         }
-        let Some(b) = local_bounds(node) else { continue };
+        let Some(b) = local_bounds(node) else {
+            continue;
+        };
         let local = node.global_transform().inverse().transform_point2(world);
         if b.grow(2.0).contains(local) {
             let key = (z_of(tree, id), order, id);
@@ -168,13 +169,24 @@ pub fn show(ui: &mut egui::Ui, frame: &mut eframe::Frame, p: &mut OpenProject, v
         let painter = ui.painter_at(rect);
         let r = egui::Rect::from_min_size(rect.right_top() + egui::vec2(-262.0, 12.0), egui::vec2(250.0, 26.0));
         painter.rect_filled(r, 13, Color32::from_black_alpha(150));
-        painter.text(r.left_center() + egui::vec2(12.0, 0.0), egui::Align2::LEFT_CENTER, format!("{badge}   F5 to stop"), egui::FontId::proportional(13.0), if play.paused { theme::WARN } else { theme::OK });
+        painter.text(
+            r.left_center() + egui::vec2(12.0, 0.0),
+            egui::Align2::LEFT_CENTER,
+            format!("{badge}   F5 to stop"),
+            egui::FontId::proportional(13.0),
+            if play.paused { theme::WARN } else { theme::OK },
+        );
         return;
     }
 
     // ------------------------------------------------------------ edit mode
     let ppp = ctx.pixels_per_point();
-    let mut xf = Xf { rect, ppp, view: View2D { center: p.cam.center, zoom: p.cam.zoom * ppp, rotation: 0.0 }, size: vec2(size_px.0 as f32, size_px.1 as f32) };
+    let mut xf = Xf {
+        rect,
+        ppp,
+        view: View2D { center: p.cam.center, zoom: p.cam.zoom * ppp, rotation: 0.0 },
+        size: vec2(size_px.0 as f32, size_px.1 as f32),
+    };
 
     // Zoom around the cursor.
     if resp.hovered() {
@@ -192,9 +204,7 @@ pub fn show(ui: &mut egui::Ui, frame: &mut eframe::Frame, p: &mut OpenProject, v
     }
 
     let tree = &mut p.scene.tree;
-    tree.update_transforms();
-    let mut list = DrawList::default();
-    list.view = xf.view;
+    let mut list = DrawList { view: xf.view, time: shared.time as f32, ..Default::default() };
     list.time = shared.time as f32;
     let t = list.time;
     vd_engine::draw_tree(tree, &mut list, t);
@@ -219,7 +229,13 @@ pub fn show(ui: &mut egui::Ui, frame: &mut eframe::Frame, p: &mut OpenProject, v
     // Camera frame.
     let fr = egui::Rect::from_min_max(xf.w2s(frame_rect.min), xf.w2s(frame_rect.max()));
     painter.rect_stroke(fr, 0, Stroke::new(1.5, theme::ACCENT.gamma_multiply(0.85)), egui::StrokeKind::Middle);
-    painter.text(fr.left_top() + egui::vec2(4.0, -14.0), egui::Align2::LEFT_CENTER, "game view", egui::FontId::proportional(11.0), theme::ACCENT);
+    painter.text(
+        fr.left_top() + egui::vec2(4.0, -14.0),
+        egui::Align2::LEFT_CENTER,
+        "game view",
+        egui::FontId::proportional(11.0),
+        theme::ACCENT,
+    );
 
     // Icons for non-visual nodes and selection outlines.
     let root = p.scene.root();
@@ -312,46 +328,46 @@ pub fn show(ui: &mut egui::Ui, frame: &mut eframe::Frame, p: &mut OpenProject, v
                 p.gizmo.drag = Some(Drag { mode: DragMode::Pan, start_world: press, start_pos: vec![], start_rot: vec![], pivot: press });
             }
         }
-    } else if resp.dragged_by(egui::PointerButton::Primary) {
-        if let (Some(drag), Some(mw)) = (&p.gizmo.drag, mouse_world) {
-            let snap = p.snap ^ ctx.input(|i| i.modifiers.command);
-            let delta = mw - drag.start_world;
-            match drag.mode {
-                DragMode::Free | DragMode::AxisX | DragMode::AxisY => {
-                    let delta = match drag.mode {
-                        DragMode::AxisX => vec2(delta.x, 0.0),
-                        DragMode::AxisY => vec2(0.0, delta.y),
-                        _ => delta,
-                    };
-                    for &(nid, start) in &drag.start_pos {
-                        let mut target = start + delta;
-                        if snap {
-                            target = (target / p.grid).round() * p.grid;
-                        }
-                        p.scene.tree.set_global_position(nid, target);
+    } else if resp.dragged_by(egui::PointerButton::Primary)
+        && let (Some(drag), Some(mw)) = (&p.gizmo.drag, mouse_world)
+    {
+        let snap = p.snap ^ ctx.input(|i| i.modifiers.command);
+        let delta = mw - drag.start_world;
+        match drag.mode {
+            DragMode::Free | DragMode::AxisX | DragMode::AxisY => {
+                let delta = match drag.mode {
+                    DragMode::AxisX => vec2(delta.x, 0.0),
+                    DragMode::AxisY => vec2(0.0, delta.y),
+                    _ => delta,
+                };
+                for &(nid, start) in &drag.start_pos {
+                    let mut target = start + delta;
+                    if snap {
+                        target = (target / p.grid).round() * p.grid;
                     }
-                    p.scene.touched = true;
+                    p.scene.tree.set_global_position(nid, target);
                 }
-                DragMode::Rotate => {
-                    let a0 = (drag.start_world - drag.pivot).to_angle();
-                    let a1 = (mw - drag.pivot).to_angle();
-                    let mut da = a1 - a0;
-                    if ctx.input(|i| i.modifiers.shift) || snap {
-                        let step = 15f32.to_radians();
-                        da = (da / step).round() * step;
+                p.scene.touched = true;
+            }
+            DragMode::Rotate => {
+                let a0 = (drag.start_world - drag.pivot).to_angle();
+                let a1 = (mw - drag.pivot).to_angle();
+                let mut da = a1 - a0;
+                if ctx.input(|i| i.modifiers.shift) || snap {
+                    let step = 15f32.to_radians();
+                    da = (da / step).round() * step;
+                }
+                for &(nid, r0) in &drag.start_rot {
+                    if let Some(n) = p.scene.tree.get_mut(nid) {
+                        n.transform.rotation = r0 + da;
                     }
-                    for &(nid, r0) in &drag.start_rot {
-                        if let Some(n) = p.scene.tree.get_mut(nid) {
-                            n.transform.rotation = r0 + da;
-                        }
-                    }
-                    p.scene.touched = true;
                 }
-                DragMode::Pan => {
-                    // Box selection could go here; empty-space drags pan.
-                    let d = resp.drag_delta();
-                    p.cam.center -= vec2(d.x, d.y) / p.cam.zoom;
-                }
+                p.scene.touched = true;
+            }
+            DragMode::Pan => {
+                // Box selection could go here; empty-space drags pan.
+                let d = resp.drag_delta();
+                p.cam.center -= vec2(d.x, d.y) / p.cam.zoom;
             }
         }
     }
@@ -373,7 +389,13 @@ pub fn show(ui: &mut egui::Ui, frame: &mut eframe::Frame, p: &mut OpenProject, v
     }
     if resp.hovered() && !ctx.egui_wants_keyboard_input() {
         let (f, w, e, r, q) = ctx.input(|i| {
-            (i.key_pressed(egui::Key::F), i.key_pressed(egui::Key::W), i.key_pressed(egui::Key::E), i.key_pressed(egui::Key::R), i.key_pressed(egui::Key::Q))
+            (
+                i.key_pressed(egui::Key::F),
+                i.key_pressed(egui::Key::W),
+                i.key_pressed(egui::Key::E),
+                i.key_pressed(egui::Key::R),
+                i.key_pressed(egui::Key::Q),
+            )
         });
         if f {
             if let Some(s) = p.scene.primary() {
@@ -439,7 +461,13 @@ fn draw_grid(painter: &egui::Painter, xf: &Xf, grid: f32) {
     while x <= br.x && guard < 1000 {
         let is_major = ((x / step).round() as i64) % 8 == 0;
         let sx = xf.w2s(vec2(x, 0.0)).x;
-        let c = if x.abs() < step * 0.5 { theme::OK.gamma_multiply(0.45) } else if is_major { major } else { minor };
+        let c = if x.abs() < step * 0.5 {
+            theme::OK.gamma_multiply(0.45)
+        } else if is_major {
+            major
+        } else {
+            minor
+        };
         painter.line_segment([Pos2::new(sx, xf.rect.top()), Pos2::new(sx, xf.rect.bottom())], Stroke::new(1.0, c));
         x += step;
         guard += 1;
@@ -449,7 +477,13 @@ fn draw_grid(painter: &egui::Painter, xf: &Xf, grid: f32) {
     while y <= br.y && guard < 1000 {
         let is_major = ((y / step).round() as i64) % 8 == 0;
         let sy = xf.w2s(vec2(0.0, y)).y;
-        let c = if y.abs() < step * 0.5 { theme::ERR.gamma_multiply(0.45) } else if is_major { major } else { minor };
+        let c = if y.abs() < step * 0.5 {
+            theme::ERR.gamma_multiply(0.45)
+        } else if is_major {
+            major
+        } else {
+            minor
+        };
         painter.line_segment([Pos2::new(xf.rect.left(), sy), Pos2::new(xf.rect.right(), sy)], Stroke::new(1.0, c));
         y += step;
         guard += 1;
@@ -470,9 +504,17 @@ fn draw_gizmo(painter: &egui::Painter, o: Pos2, tool: Tool, hot: Option<DragMode
     let x = hl(DragMode::AxisX, theme::ERR);
     let y = hl(DragMode::AxisY, theme::OK);
     painter.line_segment([o + egui::vec2(8.0, 0.0), o + egui::vec2(62.0, 0.0)], Stroke::new(2.5, x));
-    painter.add(egui::Shape::convex_polygon(vec![o + egui::vec2(72.0, 0.0), o + egui::vec2(60.0, -6.0), o + egui::vec2(60.0, 6.0)], x, Stroke::NONE));
+    painter.add(egui::Shape::convex_polygon(
+        vec![o + egui::vec2(72.0, 0.0), o + egui::vec2(60.0, -6.0), o + egui::vec2(60.0, 6.0)],
+        x,
+        Stroke::NONE,
+    ));
     painter.line_segment([o + egui::vec2(0.0, -8.0), o + egui::vec2(0.0, -62.0)], Stroke::new(2.5, y));
-    painter.add(egui::Shape::convex_polygon(vec![o + egui::vec2(0.0, -72.0), o + egui::vec2(-6.0, -60.0), o + egui::vec2(6.0, -60.0)], y, Stroke::NONE));
+    painter.add(egui::Shape::convex_polygon(
+        vec![o + egui::vec2(0.0, -72.0), o + egui::vec2(-6.0, -60.0), o + egui::vec2(6.0, -60.0)],
+        y,
+        Stroke::NONE,
+    ));
     let c = hl(DragMode::Free, theme::ACCENT_2);
     painter.rect_filled(egui::Rect::from_center_size(o, egui::vec2(12.0, 12.0)), 3, c.gamma_multiply(0.85));
 }
@@ -480,38 +522,44 @@ fn draw_gizmo(painter: &egui::Painter, o: Pos2, tool: Tool, hot: Option<DragMode
 fn toolbar(ui: &mut egui::Ui, rect: egui::Rect, p: &mut OpenProject) {
     let bar = egui::Rect::from_min_size(rect.min + egui::vec2(10.0, 10.0), egui::vec2(rect.width() - 20.0, 32.0));
     ui.scope_builder(egui::UiBuilder::new().max_rect(bar), |ui| {
-        egui::Frame::NONE.fill(Color32::from_rgba_unmultiplied(16, 16, 24, 220)).corner_radius(10).inner_margin(egui::Margin::symmetric(6, 3)).show(ui, |ui| {
-            ui.horizontal(|ui| {
-                ui.spacing_mut().item_spacing.x = 3.0;
-                for (tool, icon, tip) in [
-                    (Tool::Select, "⬉", "Select (Q)"),
-                    (Tool::Move, "↔", "Move (W)"),
-                    (Tool::Rotate, "⟳", "Rotate (E)"),
-                    (Tool::Pan, "✋", "Pan (or hold Space / middle mouse)"),
-                ] {
-                    let active = p.tool == tool;
-                    let b = egui::Button::new(RichText::new(icon).size(15.0)).fill(if active { theme::ACCENT } else { Color32::TRANSPARENT }).corner_radius(6);
-                    if ui.add(b).on_hover_text(tip).clicked() {
-                        p.tool = tool;
+        egui::Frame::NONE
+            .fill(Color32::from_rgba_unmultiplied(16, 16, 24, 220))
+            .corner_radius(10)
+            .inner_margin(egui::Margin::symmetric(6, 3))
+            .show(ui, |ui| {
+                ui.horizontal(|ui| {
+                    ui.spacing_mut().item_spacing.x = 3.0;
+                    for (tool, icon, tip) in [
+                        (Tool::Select, "⬉", "Select (Q)"),
+                        (Tool::Move, "↔", "Move (W)"),
+                        (Tool::Rotate, "⟳", "Rotate (E)"),
+                        (Tool::Pan, "✋", "Pan (or hold Space / middle mouse)"),
+                    ] {
+                        let active = p.tool == tool;
+                        let b = egui::Button::new(RichText::new(icon).size(15.0))
+                            .fill(if active { theme::ACCENT } else { Color32::TRANSPARENT })
+                            .corner_radius(6);
+                        if ui.add(b).on_hover_text(tip).clicked() {
+                            p.tool = tool;
+                        }
                     }
-                }
-                ui.separator();
-                ui.toggle_value(&mut p.snap, "📌 Snap").on_hover_text("Snap to grid (hold Ctrl to toggle)");
-                ui.add(egui::DragValue::new(&mut p.grid).range(1.0..=512.0).speed(1.0).suffix(" px")).on_hover_text("Grid size");
-                ui.toggle_value(&mut p.show_grid, "☰").on_hover_text("Show grid");
-                ui.toggle_value(&mut p.show_colliders, "○").on_hover_text("Show collision shapes");
-                ui.separator();
-                if ui.button("1:1").on_hover_text("Reset zoom").clicked() {
-                    p.cam.zoom = 1.0;
-                }
-                if ui.button("⛶").on_hover_text("Frame selection / scene (F)").clicked() {
-                    if let Some(s) = p.scene.primary() {
-                        p.cam.center = p.scene.tree.global_position(s);
-                    } else {
-                        p.frame_scene();
+                    ui.separator();
+                    ui.toggle_value(&mut p.snap, "📌 Snap").on_hover_text("Snap to grid (hold Ctrl to toggle)");
+                    ui.add(egui::DragValue::new(&mut p.grid).range(1.0..=512.0).speed(1.0).suffix(" px")).on_hover_text("Grid size");
+                    ui.toggle_value(&mut p.show_grid, "☰").on_hover_text("Show grid");
+                    ui.toggle_value(&mut p.show_colliders, "○").on_hover_text("Show collision shapes");
+                    ui.separator();
+                    if ui.button("1:1").on_hover_text("Reset zoom").clicked() {
+                        p.cam.zoom = 1.0;
                     }
-                }
+                    if ui.button("⛶").on_hover_text("Frame selection / scene (F)").clicked() {
+                        if let Some(s) = p.scene.primary() {
+                            p.cam.center = p.scene.tree.global_position(s);
+                        } else {
+                            p.frame_scene();
+                        }
+                    }
+                });
             });
-        });
     });
 }

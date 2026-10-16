@@ -73,7 +73,9 @@ pub fn show(ui: &mut egui::Ui, p: &mut OpenProject, shared: &mut Shared) {
 
     // Keyboard shortcuts for the selection.
     if !ui.ctx().egui_wants_keyboard_input() && p.play.is_none() && p.workspace == crate::app::Workspace::Scene {
-        let (del, dup, f2) = ui.input(|i| (i.key_pressed(egui::Key::Delete), i.modifiers.command && i.key_pressed(egui::Key::D), i.key_pressed(egui::Key::F2)));
+        let (del, dup, f2) = ui.input(|i| {
+            (i.key_pressed(egui::Key::Delete), i.modifiers.command && i.key_pressed(egui::Key::D), i.key_pressed(egui::Key::F2))
+        });
         if del {
             for id in p.scene.selection.clone() {
                 apply(p, shared, Action::Delete(id));
@@ -120,7 +122,9 @@ fn row(ui: &mut egui::Ui, p: &mut OpenProject, id: NodeId, depth: usize, actions
     if !matches_filter(p, id) {
         return;
     }
-    let Some(node) = p.scene.tree.get(id) else { return };
+    let Some(node) = p.scene.tree.get(id) else {
+        return;
+    };
     let path = p.scene.tree.path_of(id);
     let has_children = !node.children().is_empty();
     let expanded = p.scene.expanded.contains(&path) || !p.scene_filter.is_empty();
@@ -149,7 +153,13 @@ fn row(ui: &mut egui::Ui, p: &mut OpenProject, id: NodeId, depth: usize, actions
     // Expander arrow.
     let arrow_rect = egui::Rect::from_center_size(egui::pos2(x0 + 6.0, cy), egui::vec2(14.0, 14.0));
     if has_children {
-        painter.text(arrow_rect.center(), egui::Align2::CENTER_CENTER, if expanded { "⏷" } else { "⏵" }, egui::FontId::proportional(11.0), theme::TEXT_DIM);
+        painter.text(
+            arrow_rect.center(),
+            egui::Align2::CENTER_CENTER,
+            if expanded { "⏷" } else { "⏵" },
+            egui::FontId::proportional(11.0),
+            theme::TEXT_DIM,
+        );
     }
     painter.text(egui::pos2(x0 + 22.0, cy), egui::Align2::CENTER_CENTER, info.icon, egui::FontId::proportional(14.0), color);
     let is_root = id == p.scene.root();
@@ -158,14 +168,24 @@ fn row(ui: &mut egui::Ui, p: &mut OpenProject, id: NodeId, depth: usize, actions
         if is_root {
             name = name.strong();
         }
-        let galley = ui.painter().layout_no_wrap(name.text().to_owned(), egui::FontId::proportional(13.5), if node.visible { theme::TEXT } else { theme::TEXT_DIM });
+        let galley = ui.painter().layout_no_wrap(
+            name.text().to_owned(),
+            egui::FontId::proportional(13.5),
+            if node.visible { theme::TEXT } else { theme::TEXT_DIM },
+        );
         painter.galley(egui::pos2(x0 + 34.0, cy - galley.size().y / 2.0), galley, Color32::WHITE);
     }
     // Badges on the right: unique, script, visibility.
     let mut bx = rect.right() - 12.0;
     let eye_rect = egui::Rect::from_center_size(egui::pos2(bx, cy), egui::vec2(18.0, 18.0));
     if node.kind.is_2d() {
-        painter.text(eye_rect.center(), egui::Align2::CENTER_CENTER, if node.visible { "👁" } else { "○" }, egui::FontId::proportional(12.0), if node.visible { theme::TEXT_DIM } else { theme::BORDER });
+        painter.text(
+            eye_rect.center(),
+            egui::Align2::CENTER_CENTER,
+            if node.visible { "👁" } else { "○" },
+            egui::FontId::proportional(12.0),
+            if node.visible { theme::TEXT_DIM } else { theme::BORDER },
+        );
         bx -= 20.0;
     }
     if node.script.is_some() {
@@ -182,7 +202,8 @@ fn row(ui: &mut egui::Ui, p: &mut OpenProject, id: NodeId, depth: usize, actions
     }
 
     if renaming {
-        let edit_rect = egui::Rect::from_min_max(egui::pos2(x0 + 32.0, rect.top() + 2.0), egui::pos2(rect.right() - 40.0, rect.bottom() - 2.0));
+        let edit_rect =
+            egui::Rect::from_min_max(egui::pos2(x0 + 32.0, rect.top() + 2.0), egui::pos2(rect.right() - 40.0, rect.bottom() - 2.0));
         let buf_id = egui::Id::unique("rename_buf");
         let mut buf: String = ui.ctx().data_mut(|d| d.get_temp(buf_id).unwrap_or_else(|| node.name.clone()));
         let r = ui.put(edit_rect, egui::TextEdit::singleline(&mut buf));
@@ -356,7 +377,9 @@ fn apply(p: &mut OpenProject, shared: &mut Shared, a: Action) {
             shared.request(Request::NewBlueprint { path, attach_to: Some(id) });
         }
         Action::SaveBranch(id) => {
-            let Some(data) = doc.tree.pack(id) else { return };
+            let Some(data) = doc.tree.pack(id) else {
+                return;
+            };
             let name = crate::export::slug(&data.name);
             let path = format!("scenes/{name}.vscn");
             let file = SceneFile { format: vd_scene::packed::SCENE_FORMAT_VERSION, root: data };
@@ -370,8 +393,12 @@ fn apply(p: &mut OpenProject, shared: &mut Shared, a: Action) {
         }
         Action::MakeRoot(id) => {
             let old = doc.root();
-            let Some(old_data) = doc.tree.pack(old) else { return };
-            let Some(mut new_data) = doc.tree.pack(id) else { return };
+            let Some(old_data) = doc.tree.pack(old) else {
+                return;
+            };
+            let Some(mut new_data) = doc.tree.pack(id) else {
+                return;
+            };
             // New root keeps its own children plus every other old-root child.
             let _ = old_data;
             let others: Vec<_> = doc
@@ -400,7 +427,9 @@ pub fn add_node_dialog(ctx: &egui::Context, p: &mut OpenProject, shared: &mut Sh
     if let Some(path) = ctx.data_mut(|d| d.remove_temp::<String>(egui::Id::unique("open_bp"))) {
         shared.request(Request::OpenBlueprint(path));
     }
-    let Some(dlg) = &mut p.dialogs.add_node else { return };
+    let Some(dlg) = &mut p.dialogs.add_node else {
+        return;
+    };
     let mut open = true;
     let mut chosen: Option<NodeKind> = None;
     egui::Window::new("➕  Add node")
@@ -419,7 +448,9 @@ pub fn add_node_dialog(ctx: &egui::Context, p: &mut OpenProject, shared: &mut Sh
             let catalog = NodeKind::catalog();
             let filtered: Vec<_> = catalog
                 .into_iter()
-                .filter(|(info, _)| q.is_empty() || info.type_name.to_lowercase().contains(&q) || info.description.to_lowercase().contains(&q))
+                .filter(|(info, _)| {
+                    q.is_empty() || info.type_name.to_lowercase().contains(&q) || info.description.to_lowercase().contains(&q)
+                })
                 .collect();
             if ui.input(|i| i.key_pressed(egui::Key::Enter))
                 && let Some((_, k)) = filtered.first()

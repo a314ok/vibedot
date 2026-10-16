@@ -14,12 +14,7 @@ pub fn validate_node_name(name: &str) -> String {
 
 /// `String::get_invalid_node_name_characters()`.
 pub fn invalid_node_name_characters(allow_internal: bool) -> String {
-    INVALID_NODE_NAME_CHARACTERS
-        .iter()
-        .filter(|&&c| !(allow_internal && c == '@'))
-        .map(char::to_string)
-        .collect::<Vec<_>>()
-        .join(" ")
+    INVALID_NODE_NAME_CHARACTERS.iter().filter(|&&c| !(allow_internal && c == '@')).map(char::to_string).collect::<Vec<_>>().join(" ")
 }
 
 fn wildcard(p: &[char], s: &[char], case_sensitive: bool) -> bool {
