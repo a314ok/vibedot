@@ -9,6 +9,7 @@
 
 pub mod arena;
 pub mod color;
+pub mod gd;
 pub mod math;
 pub mod rng;
 pub mod string_name;
