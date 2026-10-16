@@ -1,0 +1,34 @@
+name: Vibedot (Rust)
+
+on:
+  push:
+    paths: ["vibedot/**", ".github/workflows/vibedot.yml"]
+  pull_request:
+    paths: ["vibedot/**", ".github/workflows/vibedot.yml"]
+
+defaults:
+  run:
+    working-directory: vibedot
+
+jobs:
+  test:
+    name: ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: vibedot
+      - name: Linux deps
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y libxkbcommon-dev libwayland-dev mesa-vulkan-drivers
+      - run: cargo fmt --all --check
+      - run: cargo clippy --workspace --all-targets -- -D warnings
+      - run: cargo test --workspace
