@@ -1024,6 +1024,17 @@ version = "0.1.0"
 [[package]]
 name = "vd_engine"
 version = "0.1.0"
+dependencies = [
+ "log",
+ "serde",
+ "serde_json",
+ "thiserror",
+ "vd_blueprint",
+ "vd_core",
+ "vd_physics",
+ "vd_render",
+ "vd_scene",
+]
 
 [[package]]
 name = "vd_physics"
